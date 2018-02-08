@@ -1,0 +1,19 @@
+* Basic Structure
+** Projects
+*** Basic Website
+*** Express Website
+*** Node Auth
+* Resources
+** Tools frequently Used
+*** Templating
+**** Bootstrap
+**** Jade
+***** HTML 2 Jade Converter
+*** User Authentication
+**** Passport
+*** Database
+**** MongoDB
+    Database
+**** Mongoose
+     ORM
+** Articles 
