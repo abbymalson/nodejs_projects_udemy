@@ -45,7 +45,7 @@ adding stylesheets/navbar, etc.
 Updating text and Links
 
 #+NAME: /routes/users.js
-#+begin_src javascript 
+#+begin_src js 
 res.render('register')
 #+end_src
 
@@ -61,7 +61,7 @@ in views, make logout.jade
 
 Now we're going to pass along the active tag
 #+NAME: /routes/users.js
-#+begin_src javascript 
+#+begin_src js 
 router.get('/register', function (req, res, next) {
   res.render('register', {title:'Register'})
 });
@@ -69,7 +69,7 @@ router.get('/register', function (req, res, next) {
 
 Showing off that jade can handle decision making 
 #+NAME: layout.jade
-#+begin_src javascript 
+#+begin_src js 
 li(class=(title == 'Members' ? 'active' : ''))
 #+end_src
 
@@ -78,8 +78,9 @@ li(class=(title == 'Members' ? 'active' : ''))
       req.body.email (body parser)
 but body parser can't handle file uploads
 that's what multer is for
+****** /routes/users.js
 #+NAME: /routes/users.js
-#+begin_src javascript 
+#+begin_src js 
 var multer = require('multer');
 var upload = multer({dest: './uploads'});
 // Futher down in the file
@@ -116,8 +117,9 @@ router.post('/register', upload.single('profileimage'), function(req, res, next)
   }
 }
 #+end_src
+****** register.jade
 #+NAME: register.jade
-#+begin_src javascript
+#+begin_src js
 if errors
   each error, i in errors
     div.alert.alert-danger #{error.msg}
@@ -128,7 +130,7 @@ create a new folder called models
 create a file called user.js
 ***** models/users.js
 #+NAME: models/user.js
-#+begin_src javascript
+#+begin_src js
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/nodeauth');
 var db = mongoose.connection;
@@ -162,7 +164,7 @@ module.exports.createUser = function(newUser, callback) {
 
 ***** routes/users.js
 #+NAME: routes/users.js
-#+begin_src javascript
+#+begin_src js
 var User = require('../models/user');
 
 // ... Further down
@@ -205,13 +207,13 @@ cd /mongodb
 cd bin
 #+end_src
 #+Name: mongo database shell
-#+begin_src javascript
+#+begin_src js
 use nodeauth
 db.users.find.pretty();
 #+end_src
 
 #+Name: add this to layout.jade
-#+begin_src javascript
+#+begin_src js
 .container
   != messages()
   block content
@@ -229,13 +231,13 @@ npm install bcryptjs --save
 #+end_src
 ***** app.js
 #+NAME: /app.js
-#+begin_src javascript
+#+begin_src js
 var bcrypt = require('bcryptjs');
 #+end_src
 
 ***** models/user.js
 #+NAME: /models/user.js
-#+begin_src javascript
+#+begin_src js
 var bcrypt = require('bcryptjs');
 // -----
 // ... Further down in the file 
@@ -259,7 +261,7 @@ npm start
 **** Passport Login Authentication
 ***** routes/users.js
 #+NAME: routes/users.js
-#+begin_src javascript
+#+begin_src js
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
 // --- Futher down the file
@@ -303,7 +305,7 @@ passport.use(new LocalStrategy(function(username, password, done) {
 #+end_src
 ***** models/user.js
 #+NAME: models/user.js
-#+begin_src javascript
+#+begin_src js
 module.exports.getUserById = function(id, callback){
   User.findById(id, callback);
 }
@@ -329,7 +331,7 @@ npm start
 **** Logout & Access Control
 ***** routes/users.js
 #+NAME: routes/users.js
-#+begin_src javascript
+#+begin_src js
 // Adding
 router.get('/logout', function(req, res){
   req.logout();
@@ -351,7 +353,7 @@ function ensureAuthenticated(req, res, next) {
 #+end_src
 ***** Now we're cleaning up buttons/navbar
 #+name: app.js
-#+begin_src javascript
+#+begin_src js
 // adding this so that we can track user info?
 app.get('*', function(req, res, next){
   res.locals.user = req.user || null;
@@ -360,7 +362,7 @@ app.get('*', function(req, res, next){
 #+end_src
 ***** layout.jade
 #+name: layout.jade
-#+begin_src javascript
+#+begin_src js
 // this let's you hide the menu items
 if !user
  li(class='something'))
@@ -370,6 +372,35 @@ if !user
 Now we have a fully working authentication system ...
 *** Node Blog System
 **** App & Module Setup
+***** Command Line
+#+NAME: command line
+#+begin_src bash
+npm install -g express
+npm install -g express-generator
+express nodeblog
+cd nodeblog
+#+end_src
+***** package.json
+#+NAME: package.json
+#+begin_src js
+{
+  "dependencies": {
+    "monk": "~1.0.1",
+    "connect-flash": "*",
+    "express-validator": "*",
+    "express-session": "*",
+    "express-messages": "*",
+    "multer": "*",
+    "moment": "*"
+  }
+}
+#+end_src
+***** Command Line
+#+NAME: command line
+#+begin_src bash
+npm install
+npm start
+#+end_src
 **** Custom Layout Template
 **** Homepage Posts Display
 **** Add Posts
@@ -448,13 +479,13 @@ npm install -g express-generator
 #+end_src
 
 #+NAME: /app.js
-#+begin_src javascript 
+#+begin_src js 
 app.use(express.static(path.join(__dirname, '/public'));
 #+end_src
 *** Flash Messages
 **** connect-flash + express-messages
 #+NAME: /app.js
-#+begin_src javascript
+#+begin_src js
 app.use(require('connect-flash')());
 app.use(function (req, res, next) {
   res.locals.messsages = reqiures('express-messages')(req, res);
@@ -463,7 +494,7 @@ app.use(function (req, res, next) {
 #+end_src 
 *** Session
 #+NAME: /app.js
-#+begin_src javascript
+#+begin_src js
 app.use(session({
   secret: 'secret',
   saveUnititalized: true,
@@ -472,19 +503,19 @@ app.use(session({
 #+end_src 
 *** Routing
 #+NAME: /app.js
-#+begin_src javascript
+#+begin_src js
 // In app.js
 // we would have to use in order to use the routes in the application
 app.use(‘/’, routes);
 app.use(‘/users’, users);
 #+end_src 
 #+NAME: /routes/index.js
-#+begin_src javascript
+#+begin_src js
 // in routes/index.js
 modules.exports = router;
 #+end_src 
 #+NAME: /routes/users.js
-#+begin_src javascript
+#+begin_src js
 // Inside routes/users.js
 // These lines are required if we are storing the routing information in a separate file
 var express = require(‘express’);
@@ -498,7 +529,7 @@ router.get(‘/edit’, function … - we are really saying router.get(‘/users
 
 *** Multer
 ***** How do you use it?
-#+begin_src javascript
+#+begin_src js
 // Handle File uploads
 var multer = require('multer');
 var upload = multer({dest: './public'});
@@ -510,7 +541,7 @@ var upload = multer({dest: './public'});
 *** User Authentication
 **** Passport
 ***** How do you use it?
-#+begin_src javascript
+#+begin_src js
 var passport = require('passport');
 var LocalStrategy = require(‘passport-local’).Strategy
 
@@ -521,7 +552,7 @@ app.use(pasport.seesion());
 *** File Uploads
 **** Multer
 ***** How do you use it?
-#+begin_src javascript
+#+begin_src js
 var multer = require('multer');
 #+end_src
 
@@ -535,7 +566,7 @@ var multer = require('multer');
 *** Validator
 **** Express Validator
 #+NAME: /app.js
-#+begin_src javascript
+#+begin_src js
 var expressValidator = reqiure('express-validator');
 app.use(expressValidator);
 #+end_src
