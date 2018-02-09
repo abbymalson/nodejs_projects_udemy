@@ -401,6 +401,14 @@ cd nodeblog
 npm install
 npm start
 #+end_src
+open up web browser to http://localhost:3000
+***** app.js
+#+NAME: app.js
+#+begin_src js
+var session = require('express-session');
+var multer = require('multer');
+var moment = require('moment');
+#+end_src
 **** Custom Layout Template
 **** Homepage Posts Display
 **** Add Posts
