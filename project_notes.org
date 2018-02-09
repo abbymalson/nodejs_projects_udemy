@@ -369,13 +369,65 @@ if !user
 
 Now we have a fully working authentication system ...
 *** Node Blog System
+**** App & Module Setup
+**** Custom Layout Template
+**** Homepage Posts Display
+**** Add Posts
+**** Text Editor & Add Categories
+**** Truncate Text & categories view
+**** Single Post & Comments
 *** Bookstore
+**** Kraken Setup and Foundation
+**** Routes & Views - Part A
+**** Routes & Views - Part B
+**** Database & Models - Part A
+**** Database & Models - Part B
+**** Admin CRUD - List & Add Books
+**** Admin CRUD - Edit & Delete Books
+**** Shopping Cart - Part A
+**** SHopping Cart - Part B
 *** ChatIO
+**** ChatIO User Interface
+**** Sending Chat Messages
+**** User Functionality
+**** Deploying an App with Heroku
 *** FindaDoc Directory
+**** Cassandra Install & Setup
+**** FindaDoc User Interface
+**** Express Setup
+**** Express Layout
+**** Fetch Doctors From Cassandra
+**** Add & Search Doctors
 *** Portfolio App
+**** MySQL & App Setup
+**** Add Projects
+**** Display Projects
+**** Edit & Delete Projects
 *** eLearning System
+**** App & Kickstart Setup
+**** Fetching Classes - Part A
+**** Fetching Classes - Part B
+**** Registering Usrs
+**** Logging In Users
+**** Instructor & Student Classes
+**** Class Lessons
 *** RecipeBook
+**** PostgresSQL Install & Database Setup
+**** App & Dust Setup
+**** Fetching & Displaying Recipes
+**** Adding Recipes
+**** Deleting Recipes
+**** Editing Recipes
 *** Albumz Music Manager
+**** App & firebase setup
+**** Creating a Layout with EJS
+**** Adding genres & Albums
+**** Listing Albums & Genres
+**** Album Details Page
+**** Edit Albums & Genres
+**** Delete Albums & Genres
+**** Register & Login
+**** Access Control
 
 * Resources
 ** Tools frequently Used
