@@ -1,19 +1,500 @@
 * Basic Structure
-** Projects
+** Projects/
+*** End goal?
+    I'd like to build this into a docker module so that we can reuse without 
+    having to install of the things that are being used and set up automatically.
 *** Basic Website
 *** Express Website
 *** Node Auth
+**** App Middleware
+    make sure express is installed everywhere, so 
+#+begin_src bash
+$ npm install -g express
+#+end_src
+
+*****  modules used:
+    mongodb, mongoose (ORM), connect-flash + express-messages, 
+    express-validator, passport, passport-local, passport-http, multer,
+    express-session
+    
+***** install modules
+#+begin_src bash
+$ npm install
+#+end_src
+***** trick for npm
+This will allow you to add it to the package.json file
+#+begin_src bash
+npm install express-session --save
+#+end_src
+**** Debugging and stuff
+Error/debugging - app requires middleware
+things not defined
+**** Views and Layouts
+***** Bootstrap
+Download from website
+
+***** Local Directory
+boostrap.css goes to public/stylesheets
+bootstrap.js goes to public/javascripts
+
+***** Back to views folder
+Input layout.jade
+adding stylesheets/navbar, etc.
+
+***** Debugging
+Updating text and Links
+
+#+NAME: /routes/users.js
+#+begin_src javascript 
+res.render('register')
+#+end_src
+
+in views, make register.jade
+
+debugging index.jade stylesheet (adding a slash)
+
+creating form controls
+
+making a view for login
+in views, make login.jade
+in views, make logout.jade
+
+Now we're going to pass along the active tag
+#+NAME: /routes/users.js
+#+begin_src javascript 
+router.get('/register', function (req, res, next) {
+  res.render('register', {title:'Register'})
+});
+#+end_src
+
+Showing off that jade can handle decision making 
+#+NAME: layout.jade
+#+begin_src javascript 
+li(class=(title == 'Members' ? 'active' : ''))
+#+end_src
+
+**** Register Form & Validation
+***** We need POSTs to submit forms
+      req.body.email (body parser)
+but body parser can't handle file uploads
+that's what multer is for
+#+NAME: /routes/users.js
+#+begin_src javascript 
+var multer = require('multer');
+var upload = multer({dest: './uploads'});
+// Futher down in the file
+// ...
+
+router.post('/register', upload.single('profileimage'), function(req, res, next) {
+  console.log(req.body.name);
+  var name = req.body.name;
+  
+  console.log(req.file);
+  // if we said multiple, we'd say files ...
+  // gives us back a lot of information
+  if (req.file) {
+    console.log('uploading file..');
+    var profileimage = req.file.filename;
+  } else {
+    console.log('no file uploaded...');
+    var profileimage = 'noimage.jpg';
+  }
+
+  // form validation
+  req.checkBody('name', 'Name field is required').notEmpty();
+  req.checkBody('email', 'Email field is required').notEmpty();
+  req.checkBody('email', 'Email field is not valid').isEmail();
+  req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
+  
+  // Check Errors
+  var errors = req.validationErrors();
+
+  if(errors) {
+    console.log('errors');
+  } else {
+    console.log('no errors');
+  }
+}
+#+end_src
+#+NAME: register.jade
+#+begin_src javascript
+if errors
+  each error, i in errors
+    div.alert.alert-danger #{error.msg}
+#+end_src
+**** Models and User Registration
+     cannot add a user yet, because we haven't created a schema
+create a new folder called models
+create a file called user.js
+***** models/users.js
+#+NAME: models/user.js
+#+begin_src javascript
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost/nodeauth');
+var db = mongoose.connection;
+
+// User Schema
+var UserSchema = mongoose.Schema({
+  username: {
+    type: String,
+    index: true
+  },
+  email: {
+    type: String,
+  },
+  password: {
+    type: String,
+  },
+  name: {
+    type: String,
+  },
+  profileimage: {
+    type: String,
+  },
+});
+
+var User = modules.exports = mongoose.model('User', UserSchema);
+
+module.exports.createUser = function(newUser, callback) {
+  newUser.save(callback);
+}
+#+end_src
+
+***** routes/users.js
+#+NAME: routes/users.js
+#+begin_src javascript
+var User = require('../models/user');
+
+// ... Further down
+
+// Check Errors
+var errors = req.validationErrors();
+
+  if (errors) {
+    res.render('register', (
+      errors: errors
+    });
+  } else {
+    var newUser = new User({
+      name: name,
+      email: email,
+      username: username,
+      password: password,
+      profileimage: profileimpage
+    });
+
+    User.createUser(newUser, function(err, user) {
+      if (err) throw err;
+      console.log(user);
+    ]);
+    
+    req.flash('success', 'You are now registered and can login');
+
+    // Let's send the user back to the home page
+    res.location('/');
+    res.redirect('/');
+  }
+});
+#+end_src
+
+***** Testing and validation steps
+we want to see if this inserted into the database
+#+Name: command line to launch mongo
+#+begin_src bash
+cd /mongodb
+cd bin
+#+end_src
+#+Name: mongo database shell
+#+begin_src javascript
+use nodeauth
+db.users.find.pretty();
+#+end_src
+
+#+Name: add this to layout.jade
+#+begin_src javascript
+.container
+  != messages()
+  block content
+#+end_src
+
+Then he updates the css ... 
+**** Password hashing with BCrypt
+     we're storing passwords as plain text, so that's a horrible idea
+     so Encryption!
+     
+***** command line
+#+NAME: command line
+#+begin_src bash
+npm install bcryptjs --save
+#+end_src
+***** app.js
+#+NAME: /app.js
+#+begin_src javascript
+var bcrypt = require('bcryptjs');
+#+end_src
+
+***** models/user.js
+#+NAME: /models/user.js
+#+begin_src javascript
+var bcrypt = require('bcryptjs');
+// -----
+// ... Further down in the file 
+module.exports.createUser = function(newUser, callback) {
+  bcrypt.genSalt(10, function(err, salt) {
+      bcrypt.hash(newUser, salt, function(err, hash) {
+          // Store hash in your password DB. 
+          newUser.password = hash;
+          newUser.save(callback);
+      });
+  });
+}
+#+end_src
+
+***** command line
+#+NAME: command line
+#+begin_src bash
+npm start
+#+end_src
+***** Checking/Debugging steps
+**** Passport Login Authentication
+***** routes/users.js
+#+NAME: routes/users.js
+#+begin_src javascript
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+// --- Futher down the file
+router.post('/login',
+  passport.authenticate('local'),{failureRedirect: '/users/login', failureFlash: 'Invalid username or password'}),
+  function(req, res) {
+    req.flash('success', 'you are now logged in');
+    res.redirect('/');
+});
+
+// We also want to make sure that we have serialize functions
+passport.serializeUser(function(user, done) {
+  done (null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  User.getUserById(id, function(err, user) {
+    done(err, user);
+  });
+});
+
+// because we are using 'local' above, we need to use a Local strategy
+passport.use(new LocalStrategy(function(username, password, done) {
+  User.getUserByUsername(username, function(err, user){
+    if (err) throw err;
+    if (!user) { 
+      return done(null, false, {message: 'Unknown User'});
+    }
+  });
+
+  User.comparePassword(password, user.password, function(err, isMatch) {
+    if(err) 
+      return done(err);
+    if(isMatch) {
+      return done(null, user);
+    } else {
+      return done(null, false, {message: 'Invalid Password'});
+    }
+  });
+}));
+#+end_src
+***** models/user.js
+#+NAME: models/user.js
+#+begin_src javascript
+module.exports.getUserById = function(id, callback){
+  User.findById(id, callback);
+}
+module.exports.getUserByUsername = function(username, callback){
+  var query = {username: username};
+  User.findOne(query, callback);
+}
+module.exports.comparePassword = function(candidatePassword, hash, callback){
+  var query = {username: username};
+  User.findOne(query, callback);
+  bcrypt.compare(candiatePassword, hash, function(err, isMatch) {
+    callback(null, isMatch);
+  });
+}
+#+end_src
+***** command line
+#+NAME: command line
+#+begin_src bash
+npm start
+#+end_src
+***** Testing
+
+**** Logout & Access Control
+***** routes/users.js
+#+NAME: routes/users.js
+#+begin_src javascript
+// Adding
+router.get('/logout', function(req, res){
+  req.logout();
+  req.flash('success', 'You are now logged out');
+  res.redirect('/users/login');
+});
+
+// adding ensureAuthenticated
+router.get('/', ensureAuthenticated, function, req, res, next) {
+  res.render('index', { title: 'Members'});
+});
+
+function ensureAuthenticated(req, res, next) {
+  if(req.isAuthenticated()) {
+    return next();
+  }
+  res.redirect('/users/login');
+}
+#+end_src
+***** Now we're cleaning up buttons/navbar
+#+name: app.js
+#+begin_src javascript
+// adding this so that we can track user info?
+app.get('*', function(req, res, next){
+  res.locals.user = req.user || null;
+  next();
+});
+#+end_src
+***** layout.jade
+#+name: layout.jade
+#+begin_src javascript
+// this let's you hide the menu items
+if !user
+ li(class='something'))
+
+#+end_src
+
+Now we have a fully working authentication system ...
+*** Node Blog System
+*** Bookstore
+*** ChatIO
+*** FindaDoc Directory
+*** Portfolio App
+*** eLearning System
+*** RecipeBook
+*** Albumz Music Manager
+
 * Resources
 ** Tools frequently Used
+   A lot of these can be searched on google to find usage of these commands, I'm just adding notes here because I'll forget how to look these up
+   Pro tip though - google is your friend ...
+*** NPM Commands
+**** Express
+#+NAME: Express
+#+begin_src bash
+npm install -g express # type to install
+express # to generate all the things
+#+end_src
+
+**** Express Generator
+#+NAME: Express Generator
+#+begin_src bash
+npm install -g express-generator
+#+end_src
+
+#+NAME: /app.js
+#+begin_src javascript 
+app.use(express.static(path.join(__dirname, '/public'));
+#+end_src
+*** Flash Messages
+**** connect-flash + express-messages
+#+NAME: /app.js
+#+begin_src javascript
+app.use(require('connect-flash')());
+app.use(function (req, res, next) {
+  res.locals.messsages = reqiures('express-messages')(req, res);
+  next();
+});
+#+end_src 
+*** Session
+#+NAME: /app.js
+#+begin_src javascript
+app.use(session({
+  secret: 'secret',
+  saveUnititalized: true,
+  resave: true
+}));
+#+end_src 
+*** Routing
+#+NAME: /app.js
+#+begin_src javascript
+// In app.js
+// we would have to use in order to use the routes in the application
+app.use(‘/’, routes);
+app.use(‘/users’, users);
+#+end_src 
+#+NAME: /routes/index.js
+#+begin_src javascript
+// in routes/index.js
+modules.exports = router;
+#+end_src 
+#+NAME: /routes/users.js
+#+begin_src javascript
+// Inside routes/users.js
+// These lines are required if we are storing the routing information in a separate file
+var express = require(‘express’);
+var router = express.Router();
+// at the bottom of the page
+// in routes/users.js
+modules.exports = router;
+// if we use use
+router.get(‘/edit’, function … - we are really saying router.get(‘/users/edit’ ...) -- food for thought
+#+end_src 
+
+*** Multer
+***** How do you use it?
+#+begin_src javascript
+// Handle File uploads
+var multer = require('multer');
+var upload = multer({dest: './public'});
+#+end_src
 *** Templating
 **** Bootstrap
 **** Jade
 ***** HTML 2 Jade Converter
 *** User Authentication
 **** Passport
+***** How do you use it?
+#+begin_src javascript
+var passport = require('passport');
+var LocalStrategy = require(‘passport-local’).Strategy
+
+// Passport
+app.use(passport.initialize());
+app.use(pasport.seesion());
+#+end_src
+*** File Uploads
+**** Multer
+***** How do you use it?
+#+begin_src javascript
+var multer = require('multer');
+#+end_src
+
 *** Database
 **** MongoDB
     Database
+***** How do you use it?
 **** Mongoose
      ORM
+***** How do you use it?
+*** Validator
+**** Express Validator
+#+NAME: /app.js
+#+begin_src javascript
+var expressValidator = reqiure('express-validator');
+app.use(expressValidator);
+#+end_src
+*** Encryption
+**** bcrypt
 ** Articles 
+*** [[https://nodejs.org/en/docs/guides/dont-block-the-event-loop/][Don't block the event loop]]
+**** Remember, the Event Loop should orchestrate client requests, not fulfill them itself. For a complicated task, move the work off of the Event Loop onto a Worker Pool.
+**** [[https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS][ReDoS - Regular Expression Denial of Service]]
+**** Keep things small
+****  Document api execution cost
+*** [[https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/][Event Loop Timers and process.nextTick()]]
+*** [[https://nodejs.org/en/docs/guides/blocking-vs-non-blocking/][Overview of Blocking and Non-Blocking]]
+*** [[https://nodejs.org/en/docs/guides/debugging-getting-started/][Debugging Getting Started]]
