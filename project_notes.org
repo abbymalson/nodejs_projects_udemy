@@ -1,22 +1,22 @@
 * Basic Structure
 ** Projects/
 *** End goal?
-    I'd like to build this into a docker module so that we can reuse without 
+    I'd like to build this into a docker module so that we can reuse without
     having to install of the things that are being used and set up automatically.
 *** Basic Website
 *** Express Website
 *** Node Auth
 **** App Middleware
-    make sure express is installed everywhere, so 
+    make sure express is installed everywhere, so
 #+begin_src bash
 $ npm install -g express
 #+end_src
 
 *****  modules used:
-    mongodb, mongoose (ORM), connect-flash + express-messages, 
+    mongodb, mongoose (ORM), connect-flash + express-messages,
     express-validator, passport, passport-local, passport-http, multer,
     express-session
-    
+   
 ***** install modules
 #+begin_src bash
 $ npm install
@@ -45,7 +45,7 @@ adding stylesheets/navbar, etc.
 Updating text and Links
 
 #+NAME: /routes/users.js
-#+begin_src js 
+#+begin_src js
 res.render('register')
 #+end_src
 
@@ -61,15 +61,15 @@ in views, make logout.jade
 
 Now we're going to pass along the active tag
 #+NAME: /routes/users.js
-#+begin_src js 
+#+begin_src js
 router.get('/register', function (req, res, next) {
   res.render('register', {title:'Register'})
 });
 #+end_src
 
-Showing off that jade can handle decision making 
+Showing off that jade can handle decision making
 #+NAME: layout.jade
-#+begin_src js 
+#+begin_src js
 li(class=(title == 'Members' ? 'active' : ''))
 #+end_src
 
@@ -80,7 +80,7 @@ but body parser can't handle file uploads
 that's what multer is for
 ****** /routes/users.js
 #+NAME: /routes/users.js
-#+begin_src js 
+#+begin_src js
 var multer = require('multer');
 var upload = multer({dest: './uploads'});
 // Futher down in the file
@@ -89,7 +89,7 @@ var upload = multer({dest: './uploads'});
 router.post('/register', upload.single('profileimage'), function(req, res, next) {
   console.log(req.body.name);
   var name = req.body.name;
-  
+ 
   console.log(req.file);
   // if we said multiple, we'd say files ...
   // gives us back a lot of information
@@ -106,7 +106,7 @@ router.post('/register', upload.single('profileimage'), function(req, res, next)
   req.checkBody('email', 'Email field is required').notEmpty();
   req.checkBody('email', 'Email field is not valid').isEmail();
   req.checkBody('password2', 'Passwords do not match').equals(req.body.password);
-  
+ 
   // Check Errors
   var errors = req.validationErrors();
 
@@ -189,7 +189,7 @@ var errors = req.validationErrors();
       if (err) throw err;
       console.log(user);
     ]);
-    
+   
     req.flash('success', 'You are now registered and can login');
 
     // Let's send the user back to the home page
@@ -219,11 +219,11 @@ db.users.find.pretty();
   block content
 #+end_src
 
-Then he updates the css ... 
+Then he updates the css ...
 **** Password hashing with BCrypt
      we're storing passwords as plain text, so that's a horrible idea
      so Encryption!
-     
+    
 ***** command line
 #+NAME: command line
 #+begin_src bash
@@ -240,11 +240,11 @@ var bcrypt = require('bcryptjs');
 #+begin_src js
 var bcrypt = require('bcryptjs');
 // -----
-// ... Further down in the file 
+// ... Further down in the file
 module.exports.createUser = function(newUser, callback) {
   bcrypt.genSalt(10, function(err, salt) {
       bcrypt.hash(newUser, salt, function(err, hash) {
-          // Store hash in your password DB. 
+          // Store hash in your password DB.
           newUser.password = hash;
           newUser.save(callback);
       });
@@ -287,13 +287,13 @@ passport.deserializeUser(function(id, done) {
 passport.use(new LocalStrategy(function(username, password, done) {
   User.getUserByUsername(username, function(err, user){
     if (err) throw err;
-    if (!user) { 
+    if (!user) {
       return done(null, false, {message: 'Unknown User'});
     }
   });
 
   User.comparePassword(password, user.password, function(err, isMatch) {
-    if(err) 
+    if(err)
       return done(err);
     if(isMatch) {
       return done(null, user);
@@ -412,19 +412,1538 @@ var moment = require('moment');
 **** Custom Layout Template
 **** Homepage Posts Display
 **** Add Posts
+***** routes/posts.js
+    #+name: routes/posts.js
+    #+begin_src js
+    var express = require('express');
+    var router = express.Router();
+
+    router.get('/add', function(req, res, next) {
+       var categories = db.get('categories');
+      
+       categories.find({}, {}, function(err, categories) {
+        res.render('addpost',{
+          'title': 'Add Post'
+          'categories': categories
+        });
+      
+       });
+    });
+
+    module.exports = router;
+    #+end_src
+***** app.js
+      #+name: app.js
+      #+begin_src js
+      // remove users route
+      // add posts route
+      var posts = require('./routes/posts');
+
+      // Line 74 (update /users to posts)
+      app.use('/posts', posts);
+      #+end_src
+***** views/addpost.jade
+      #+name: views/addpost.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        h1 = title
+        ul.errors
+          if errors
+             each error, i in errors
+               li.alert.alert-danger #{error.msg}
+        form(method='post', alert'/posts/add',
+        enctype="multipart/form-data")
+          .form-group
+            label Title:
+            input.form-control(name='title',
+            type='text')
+          .form-group
+            label Category
+            select.form-control(name='category')
+              each category, i in categories
+                option(value='#{category.name}') #{category.name}
+          .form-group
+            label Body
+            textarea.form-control(name='body',
+            id='body')
+          .form-group
+            label Main Image:
+            input.form-control(name='mainimage',
+            type='file')
+          .form-group
+            label Author:
+            select.form-control(name='author')
+              option(value='Abby') Abby
+              option(value='John') John
+             
+        input.btn.btn-default(name='submit',
+        type='submit', value='Save')
+      #+end_src
+     
+***** public/stylesheets/style.css
+      #+name: public/stylesheets/style.css
+      #+begin_src css
+      input, select, textarea {
+        margin-bottom:15px;
+      }
+
+      label {
+        display:inline-block;
+        width:180px;
+      }
+
+      input[type='text'], select, textarea {
+        padding: 3px;
+        height: 20px;
+        width: 200px;
+        border: 1px #ccc solid;
+      }
+     
+      select {
+        height: 28px
+      }
+     
+      textarea {
+        height: 70px;
+        width: 400px;
+      }
+      #+end_src
+     
+***** Adding post function to post route
+      #+name: routes/post.js
+      #+begin_src js
+      // After express and router
+      // upload.single will generate an error because upload is not defined ...
+      // so we add this stuff to the top of the page
+      var multer = require('multer');
+      var upload = multer({ dest: 'uploads/' });
+
+      // Adding Database
+      var mongo = require('mongodb');
+      var db = require('monk')('localhost/nodeblog');
+
+      // This function is added to the post router
+      router.post('/add', upload.single('mainimage'), function(req, res, next) {
+        // Get the form values
+        var title = req.body.title;
+        var category = req.body.category;
+        var body = req.body.body;
+        var author = req.body.author;
+        var date = new Date();
+       
+        console.log(title);
+        // Check image upload
+        if (req.file) {
+          var mainimage = req.file.filename;
+        } else {
+          var mainimage = "noimage.jpg";
+        }
+       
+        // Form Validation
+        req.checkBody('title', 'Title field is required').notEmpty();
+        req.checkBody('body', 'body field is required').notEmpty();
+       
+        // Check Errors
+        var errors = req.validationErrors();
+       
+        if (errors) {
+          res.render('addpost', {
+            "errors": errors
+          });
+        } else {
+          var posts = db.get('posts');
+          posts.insert({
+            "title": title,
+            "body": body,
+            "category": category,
+            "date": date,
+            "author": author,
+            "mainimage": mainimage
+          }, function(err, post){
+            if(err) {
+              res.send(err);
+            } else {
+              req.flash('success', 'Post Added');
+              res.location('/');
+              res.redirect('/');
+            }
+          });
+        }
+      });
+      #+end_src
+
+***** Mongo Shell
+      #+name: mongo shell commands to add categories
+      #+begin_src js
+      show collections
+      db.categories.insert({name:'Technology'})
+      db.categories.insert({name:'Science'})
+      db.categories.insert({name:'Business'})
+      #+end_src
+
+      Now they test quite a bit at this stage
 **** Text Editor & Add Categories
+     we want to add categories
+     but we want to add the text editor
+     ckeditor, lots of features, easy to setup (downloading ckeditor - standard)
+     put folder in the application (public folder)
+     addpost.jade
+     include script at the bottom
+***** views/addpost.jade
+      #+name:views/addpost.jade
+      #+begin_src js
+      // line 30 (bottom of file)
+      script(src='/cdeditor/ckeditor.js')
+      script
+        | CKEDITOR.replace('body');
+      #+end_src
+      reload/restart server
+      and now we have a text editor, nice editor/simple to implement
+***** routes/categories.js
+      #+name: routes/categories.js
+      #+begin_src js
+      var express = require('express');
+      var router = express.Router();
+      var mongo = require('mongodb'); // added because we use the database
+      var db = require('monk')('localhost/nodeblog');
+
+      router.get('/add', function(req, res, next) {
+          res.render('addcategory',{
+            'title': 'Add Category'
+          });
+      });
+
+      module.exports = router;
+      #+end_src
+***** views/addcategory.jade
+      #+name views/addcategory.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        h1=title
+        ul.errors
+          if errors
+            each error, i in errors
+              li.alert.alert-danger #{error.msg}
+        form(method='post', action='/categories/add' )
+          .form-group
+            label Name:
+            input.form-control(name='name, type='text')
+          input.btn.btn-default(name='submit', type='submit', value='Save')
+      #+end_src
+      check if it renders
+
+***** app.js
+      now we need to add categories
+      #+name: app.js
+      #+begin_src js
+      var categories = require('./routes/categories');
+      // further down the file
+      app.use('/categories', categories);
+      #+end_src
+      restart the server
+      had to remove some code (file upload stuff) because we didn't complete that part of the process
+***** routes/categories.js
+      #+name: routes/categories.js
+      #+begin_src js
+      var express = require('express');
+      var router = express.Router();
+      var mongo = require('mongodb'); // added because we use the database
+      var db = require('monk')('localhost/nodeblog');
+
+      router.get('/add', function(req, res, next) {
+          res.render('addcategory',{
+            'title': 'Add Category'
+          });
+      });
+
+      router.post('/add', function(req, res, next) {
+        var name = req.body.name
+        req.checkbody('name', 'Name field is required');
+        var errors = req.validationErrors();
+        if (errors) {
+            res.render('addcategory', {
+              "errors": errors
+            });
+       
+        } else {
+          var categories = db.get('categories');
+          categories.insert({
+            "name": name
+          }, function(err, post) {
+            if (err) {
+              res.send(err);
+            } else {
+              req.flash('success', 'Category Added');
+              res.location('/');
+              res.redirect('/');
+            }
+          });
+        }
+      });
+     
+      module.exports = router;
+      #+end_src
+      save and test
+      error ...
+
 **** Truncate Text & categories view
+     we want to be able to truncate the output of the blog (and a read more option)
+*****  mongo shell
+      so we go to the mongo shell
+      #+name: mongo shell
+      #+begin_src js
+      db.posts.remove({});
+      #+end_src
+      goes through adding things back into the program ...
+      we want to add messaging when we add categories
+*****  views/layout.jade
+      Messaging is not displaying when we add categories
+      the important bit in this section is "!= messages()"
+      #+name: views/layout.jade
+      #+begin_src js
+      doctype html
+      html
+        head
+          title= title
+          link(rel='stylesheet', href='/stylesheets/style.css)
+        body
+          .container
+            img.logo(src='/images/nodebloglogo.png');
+            nav
+              ul
+                li
+                  a(href='/') Home
+                li
+                  a(href='/posts/add') Add Post
+                li
+                  a(href='/categories/add') Add Category
+            != messages()
+            block content
+            footer
+              p NodeBlog &copy; 2016
+      #+end_src
+
+***** stylesheets/style.css
+      #+name: stylesheets/style.css
+      #+begin_src js
+      ul.success li {
+        padding: 15px;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+        color: #3c763d;
+        background-color: #DFF0D8
+        border-color: #d6e9c6
+        list-style:none;
+      }
+      #+end_src
+      at this point its generating unformatted text diplayed (still seeing
+      html tags)
+***** views/index.jade
+      #+name: views/index.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        if posts
+          each post, i in posts
+            .post
+            h1
+              a(href='/posts/show/#{post._id}')
+               =post.title
+            p.meta Posted in #{post.category} by #{post.author} on
+            #{moment(post.date).format("MM-DD-YYYY")}
+            !=truncateText(post.body, 400)
+            a.more(href='/posts/show/#{post._id}') Read More
+      #+end_src
+      the important bit in that update was the
+      !=post.body
+      adding the "!" changes formats the HTML encoded text in the database
+      returned string...
+***** app.js
+      we want to truncate the blog post if it's too long
+      so we are going to define a global function
+      #+name: app.js
+      #+begin_src js
+      // approx line 23 - after moment definition
+      app.locals.truncateText(text, length) {
+        var truncatedText = text.substring(0, length);
+        return truncatedText;
+      }
+      #+end_src
+***** views/index.jade
+      #+name: views/index.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        if posts
+          each post, i in posts
+            .post
+            h1
+              a(href='/posts/show/#{post._id}')
+               =post.title
+            p.meta Posted in #{post.category} by #{post.author} on
+            #{moment(post.date).format("MM-DD-YYYY")}
+            img(src='/uploads/#{post.mainimage}')
+            !=truncateText(post.body, 400)
+            a.more(href='/posts/show/#{post._id}') Read More
+      #+end_src
+      the important bit is the img
+      we are adding the image to the blog posts ... (some debugging happens here)
+     
+      I'm not going to type all of the debugging steps, but he updated the multer
+      uploads directory to './public/images/' ...
+     
+      now we want to be able to click on the categories for a post to pull
+      up posts that are within that category ...
+***** routes/categories.js
+      #+name: routes/categories.js
+      #+begin_src js
+      var express = require('express');
+      var router = express.Router();
+      var mongo = require('mongodb'); // added because we use the database
+      var db = require('monk')('localhost/nodeblog');
+
+      // adding this
+      router.get('/show/:category', function(req, res, next) {
+       var posts = db.get('posts');
+      
+       posts.find({category: req.params.category}, {}, function(err, posts) {
+        res.render('index',{
+          'title': req.params.category,
+          'posts': posts
+        });
+      });
+
+      router.get('/add', function(req, res, next) {
+          res.render('addcategory',{
+            'title': 'Add Category'
+          });
+      });
+
+      router.post('/add', function(req, res, next) {
+        var name = req.body.name
+        req.checkbody('name', 'Name field is required');
+        var errors = req.validationErrors();
+        if (errors) {
+            res.render('addcategory', {
+              "errors": errors
+            });
+       
+        } else {
+          var categories = db.get('categories');
+          categories.insert({
+            "name": name
+          }, function(err, post) {
+            if (err) {
+              res.send(err);
+            } else {
+              req.flash('success', 'Category Added');
+              res.location('/');
+              res.redirect('/');
+            }
+          });
+        }
+      });
+     
+      module.exports = router;
+      #+end_src
+***** views/index.jade
+      #+name: views/index.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        if posts
+          each post, i in posts
+            .post
+            h1
+              a(href='/posts/show/#{post._id}')
+               =post.title
+            p.meta Posted in a(href='/categories/show/#{post.category}')
+            #{post.category}
+            by #{post.author} on
+            #{moment(post.date).format("MM-DD-YYYY")}
+            img(src='/uploads/#{post.mainimage}')
+            !=truncateText(post.body, 400)
+            a.more(href='/posts/show/#{post._id}') Read More
+      #+end_src
+      the important bit is the img
+      we are adding the image to the blog posts ... (some debugging happens here)
+     
+      I'm not going to type all of the debugging steps, but he updated the multer
+      uploads directory to './public/images/' ...
+     
+      now we want to be able to click on the categories for a post to pull
+      up posts that are within that category ...
 **** Single Post & Comments
+     Read more functionality
+***** Routes/post.js
+      #+name: routes/post.js
+
+      #+begin_src js
+      // After express and router
+      // upload.single will generate an error because upload is not defined ...
+      // so we add this stuff to the top of the page
+      var multer = require('multer');
+      var upload = multer({ dest: 'uploads/' });
+
+      // Adding Database
+      var mongo = require('mongodb');
+      var db = require('monk')('localhost/nodeblog');
+
+      router.get('/show/:id', function(req, res, next) {
+        var posts = db.get('posts');
+
+        posts.findById(req.params.id, function(err, post) {
+          res.render('show',{
+            'post': post
+          });
+
+        });
+      });
+      // This function is added to the post router
+      router.post('/add', upload.single('mainimage'), function(req, res, next) {
+        // Get the form values
+        var title = req.body.title;
+        var category = req.body.category;
+        var body = req.body.body;
+        var author = req.body.author;
+        var date = new Date();
+       
+        console.log(title);
+        // Check image upload
+        if (req.file) {
+          var mainimage = req.file.filename;
+        } else {
+          var mainimage = "noimage.jpg";
+        }
+       
+        // Form Validation
+        req.checkBody('title', 'Title field is required').notEmpty();
+        req.checkBody('body', 'body field is required').notEmpty();
+       
+        // Check Errors
+        var errors = req.validationErrors();
+       
+        if (errors) {
+          res.render('addpost', {
+            "errors": errors
+          });
+        } else {
+          var posts = db.get('posts');
+          posts.insert({
+            "title": title,
+            "body": body,
+            "category": category,
+            "date": date,
+            "author": author,
+            "mainimage": mainimage
+          }, function(err, post){
+            if(err) {
+              res.send(err);
+            } else {
+              req.flash('success', 'Post Added');
+              res.location('/');
+              res.redirect('/');
+            }
+          });
+        }
+      });
+      #+end_src
+*****  views/show.jade
+      similar to index.view - so copy
+      #+name: views/show.jade
+      #+begin_src js
+      extends layout
+
+      block content
+            .post
+            h1=post.title
+            p.meta Posted in
+            a(href='/categories/show/#{post.category}')
+            #{post.category}
+            by #{post.author} on
+            #{moment(post.date).format("MM-DD-YYYY")}
+            img(src='/uploads/#{post.mainimage}')
+            !=post.body
+      #+end_src
+      restart and debug
+      comments will be part of the post object
+      #+name: views/show.jade
+      #+begin_src js
+      extends layout
+
+      block content
+            .post
+            h1=post.title
+            p.meta Posted in
+            a(href='/categories/show/#{post.category}')
+            #{post.category}
+            by #{post.author} on
+            #{moment(post.date).format("MM-DD-YYYY")}
+            img(src='/uploads/#{post.mainimage}')
+            !=post.body
+            br
+            hr
+            if post.comments
+              h3 Comments
+              each comment, i in post.comments
+               .comment
+                p.comment-name #{comment.name}
+                p.comment-body #{comment.body}
+              br
+            h3 Add Comment
+            if errors
+              ul.errors
+                each error, i in errors
+                  li.alert.alert-danger #{error.msg}
+            form.comment-form(method='post', action='/posts/addcomment')
+              input(name='postid', type='hidden', value='#{post._id}')
+              .form-group
+                label Name
+                input.form-control(type='text', name='name')
+              .form-group
+                label Email
+                input.form-control(type='text', name='email')
+              .form-group
+                label Body
+                input.form-control(type='text', name='body')
+              br
+              input.btn.btn-default(type='submit', name='submit', value='Add Comment')
+      #+end_src
+      save/reload/test
+***** Routes/post.js
+      #+name: routes/post.js
+
+      #+begin_src js
+
+      // This function is added to the post router
+      router.post('/addcomment' , function(req, res, next) {
+        // Get the form values
+        var name = req.body.name;
+        var email = req.body.email;
+        var body = req.body.body;
+        var postid = req.body.postid;
+        var commentdate = new Date();
+       
+        // Form Validation
+        req.checkBody('name', 'Name field is required').notEmpty();
+        req.checkBody('email', 'Email field is required, but never displayed').notEmpty();
+        req.checkBody('email', 'Email is not formatted properly').isEmail();
+        req.checkBody('body', 'body field is required').notEmpty();
+       
+        // Check Errors
+        var errors = req.validationErrors();
+       
+        if (errors) {
+          var posts = db.get('posts');
+          posts.findById(postid, function (err, post) {
+            res.render('show', {
+              "errors": errors,
+              "post": post
+            });
+          });
+        } else {
+          var comment = {
+            "name": name,
+            "email": email,
+            "body": body,
+            "commentdate": commentdate
+          }
+         
+          var posts = db.get('posts');
+         
+          pots.update({
+            "_id": postid,
+          }, {
+            $push: {
+              "comments": comment
+            }, function (err, doc) {
+              if (err) {
+                throw err;
+              } else {
+                req.flash('success', 'Comment Added');
+                res.location('/psots/show/' + postid);
+                res.redirect('/psots/show/' + postid);
+              }
+            }
+          });
+        }
+      });
+      #+end_src
+      testing/debugging
+      now we have a blog with posts and comments ...
 *** Bookstore
+    simple shopping cart for tech books, add, edit, delete books, add to cart, check out and pay for them in paypal
+    we are using kraken, security and routing, dust templating system, better alternative to jade (in his opinion)
 **** Kraken Setup and Foundation
+     not getting into sophisticated ecommerce stuff, not paying with credit card
+     total will equal what paypal button will total to, not going to actually complete the order, etc.
+     kraken sits on top of express
+     http://krakenjs.com/
+     generate project with `yo kraken`
+     controllers, models and views
+     we need mongodb and mongoose
+     `npm install mongodb connect-flash express-messages`
+     test - port 8000
+     [[https://foundation.zurb.com/][foundation.zurb.com]] - front end css styling
+     download complete version, open zip for foundation, and public, css
+     foundation.css to public/css
+     javascript - foundation.js -> public/js
+     javascript - vendor -> public/js
+***** public/templates/master.dust
+      #+name: public/templates/master.dust
+      #+begin_src html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>{+title /}</title>
+          <link rel="stylesheet" href="/css/app.css">
+          <link rel="stylesheet" href="/css/foundation.css">
+
+        </head>
+        <body>
+          <div class="row">
+            <div class="large-12 columns">
+              <div class="top-bar">
+                <div class="top-bar-left">
+                  <ul class="menu">
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">About</a></li>
+                    <li><a href="#">Cart</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <h1>TekBooks</h1>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              {+body /}
+            </div>
+          </div>
+          <footer>
+          <div class="row">
+            <div class="large-12 columns">
+              <p>TekBooks &copy; 2016 | <a href="/manage">Manage</a></p>
+            </div>
+          </div>
+          </footer>
+        <script data-main="/js/app" src="/components/requirejs/require.js"></script>
+        </body>
+      </html>
+      #+end_src
 **** Routes & Views - Part A
+***** public/templates/index.dust
+      #+name: public/templates/index.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<body}
+        <div class="large-3 columns book">
+         <img src="/img/node1.jpg">
+         <h4>Professional Node.js</h4>
+         <p>Lorem ipsum</p>
+         <div class="price">Buy it for <span>$19.99</span></div>
+         <br>
+         <a href="/books/details/1" class="button small">Book Details</a>
+        </div>
+        <div class="large-3 columns book">
+         <img src="/img/node2.jpg">
+         <h4>Node.js Blueprints</h4>
+         <p>Lorem ipsum</p>
+         <div class="price">Buy it for <span>$29.99</span></div>
+         <br>
+         <a href="/books/details/1" class="button small">Book Details</a>
+        </div>
+        <div class="large-3 columns book">
+         <img src="/img/node3.jpg">
+         <h4>Node Web Development</h4>
+         <p>Lorem ipsum</p>
+         <div class="price">Buy it for <span>$17.99</span></div>
+         <br>
+         <a href="/books/details/1" class="button small">Book Details</a>
+        </div>
+        <div class="large-3 columns book">
+         <img src="/img/node4.jpg">
+         <h4>Intro to Node.js</h4>
+         <p>Lorem ipsum</p>
+         <div class="price">Buy it for <span>$13.99</span></div>
+         <br>
+         <a href="/books/details/1" class="button small">Book Details</a>
+        </div>
+      {/body}
+      #+end_src
+      we make a new folder called 'public/img' and pasted in a bunch
+      of tech book cover images
+     
+      we put in a bunch of static data for now ...
+***** public/css/style.css
+      #+name: public/css/style.css
+      #+begin_src css
+      .top-bar {
+        margin-bottom:20px;
+      }
+
+      .book {
+      text-align: center;
+      }
+
+      .book h4 {
+        margin-top: 15px;
+      }
+     
+      .price {
+        margin:5px;
+        font-size: 18px;
+      }
+     
+      .price span {
+        color:green;
+        background: #f4f4f4; /* light grey */
+        padding: 10px;
+        border: 1px #ccc solid;
+        border-radius: 50%;
+      }
+     
+      footer {
+        margin-top: 40px;
+        padding: 10px;
+        text-align: center;
+      }
+      #+end_src
+      we need a route now
+***** template/layouts/master.dust
+      #+name: template/layouts/master.dust
+      #+begin_src html
+          <link rel="stylesheet" href="/css/style.css">
+      #+end_src
+***** controllers/books.js
+      #+name: controllers/books.js
+      #+begin_src js
+      'use strict';
+      module.exports = function(router) {
+        router.get('/', funtcion(req, res));
+          res.render('index');
+        });
+
+        router.get('details/:id', function(req, res) {
+          res.render('books/details');
+        });
+      }
+      #+end_src
+***** templates/books/details.dust
+      #+name: templates/books/details.dust
+      #+begin_src html
+      DETAILS TEST
+      #+end_src
+***** locales/US/en/layouts/books/details.properties
+      Just create the file (they reflect the views you have)
+      #+name:locales/US/en/layouts/books/details.properties
+      #+begin_src
+      #+end_src
 **** Routes & Views - Part B
+***** locales/US/en/layouts/books/details.properties
+      Just create the file (they reflect the views you have)
+      #+name:locales/US/en/layouts/books/details.properties
+      #+begin_src
+      #+end_src
+***** templates/books/details.dust
+      #+name: templates/books/details.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<body}
+        <div class="large-4 columns book">
+          <img src="/img/node1.jpg">
+        </div>
+        <div class="large-8 columns book">
+          <h2>Professional Node.js</h2>
+          <ul class="bookInfo">
+            <li>Category: Node.js</li>
+            <li>Author: John Doe</li>
+            <li>Publisher: Some Publisher</li>
+          </ul>
+          <br>
+          <div class="price"><span>$19.99</span></div>
+          <br>
+          <p>Lorem ipsum</p>
+          <a class="button success">Add to cart</a>
+        </div>
+      {/body}
+      #+end_src
+      test  ...
+***** public/css/style.css
+      we want to get rid of the bullets
+      #+name: public/css/style.css
+      #+begin_src css
+      ul, li {
+        list-style: none;
+      }
+      #+end_src
+***** controllers/manage.js
+      Manage template!
+      #+name: controllers/manage.js
+      #+begin_src js
+      'use strict';
+
+      module.exports = function (router) {
+        router.get('/', function(req, res) {
+          res.render('manage/index');
+        });
+        router.get('/books', function(req, res) {
+          res.render('manage/books/index');
+        });
+        router.get('/categories', function(req, res) {
+          res.render('manage/categories/index');
+        });
+      };
+      #+end_src
+***** layouts/manage.dust
+      #+name:
+      #+begin_src html
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="utf-8" />
+          <title>Admin | {+title /}</title>
+          <link rel="stylesheet" href="/css/app.css">
+          <link rel="stylesheet" href="/css/foundation.css">
+
+        </head>
+        <body>
+          <div class="row">
+            <div class="large-12 columns">
+              <div class="top-bar">
+                <div class="top-bar-left">
+                  <ul class="menu">
+                    <li><a href="/manage/">Dashboard</a></li>
+                    <li><a href="/manage/books">Books</a></li>
+                    <li><a href="/manage/categories">Categories</a></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              <h1>TekBooks</h1>
+            </div>
+          </div>
+          <div class="row">
+            <div class="large-12 columns">
+              {+body /}
+            </div>
+          </div>
+          <footer>
+          <div class="row">
+            <div class="large-12 columns">
+              <p>TekBooks &copy; 2016 | <a href="/">Front-end</a></p>
+            </div>
+          </div>
+          </footer>
+        <script data-main="/js/app" src="/components/requirejs/require.js"></script>
+        </body>
+      </html>
+      #+end_src
+      we also need some new directores under templates: books, categories
+      we will add basic text for now ...
+***** templates/manage/books/add.dust
+      #+name: tempalets/manage/books/add.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      add books
+      #+end_src
+***** templates/manage/books/edit.dust
+      #+name: templates/manage/books/edit.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      edit books
+      #+end_src
+***** templates/manage/books/index.dust
+      #+name: templates/manage/books/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      index books
+      #+end_src
+***** templates/manage/categories/add.dust
+      #+name: tempalets/manage/categories/add.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      add category
+      #+end_src
+***** templates/manage/categories/edit.dust
+      #+name: templates/manage/categories/edit.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      edit category
+      #+end_src
+***** templates/manage/categories/index.dust
+      #+name: templates/manage/categories/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      categories
+      #+end_src
+***** templates/manage/index.dust
+      #+name: templates/manage/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+      Manage Index
+      #+end_src
+      restart the server, debugging ...
+      create the following files
+      locales/en/manage/index.properties
+      locales/en/manage/books/index.properties
+      locales/en/manage/books/add.properties
+      locales/en/manage/books/edit.properties
+      locales/en/manage/categories/index.properties
+      locales/en/manage/categories/add.properties
+      locales/en/manage/categories/edit.properties
+      locales/en/layouts/manage.properties
+
+      templates are now setup
 **** Database & Models - Part A
+     we need a database, so we're going to setup mongodb ...
+***** mongo shell
+      #+name: mongo shell
+      #+begin_src js
+      show dbs
+      use tekbooks
+      db.createCollection('books');
+      db.createCollection('categories');
+      show collections
+      db.books.insert({title:"Professional Node.js",description:"sample text One", category: "Node.js", author: "John Doe One", publisher: "publisher One", price: "19.99", cover: "node1.jpg"});
+      db.books.find();
+      db.books.insert({title:"Node.js Blueprint",description:"sample text Two", category: "Node.js", author: "John Doe Two", publisher: "publisher Two", price: "19.99", cover: "node2.jpg"});
+      #+end_src
+***** lib/db.js
+      we need to let the system know things like db type, db credentials
+      #+name:lib/db.js
+      #+begin_src js
+      'use strict';
+      var mongoose = requier('mongoose');
+      var db = function() {
+        return {
+          config: function() {
+            mongoose.connect('mongodb://localhost/tekbooks');
+            var db = mongoose.connection;
+            db.on('error', console.error.bind(console, 'Connection Error'))
+            db.once('open', function() {
+              console.log('db connection open')
+            });
+          }
+        }
+      }
+      module.exports = db();
+      #+end_src
+***** index.js
+      Going to the main js file (index.js)
+      #+name: index.js
+      #+begin_src js
+      var db = require('./lib/db');
+
+      // further down the file (line 19/20 or so)
+      db.config(config.get('databaseConfig'));
+
+      // before next(null, config);
+      #+end_src
+      testing again ...
 **** Database & Models - Part B
+     now we need to create our models
+***** book model
+      #+name:models/bookModel.js
+      #+begin_src js
+      'use strict';
+
+      var mongoose = require('mongoose');
+
+      var bookModel = function() {
+        var bookSchema = mongoose.Schema({
+          title: String,
+          category: String,
+          description: String,
+          author: String,
+          publisher: String,
+          price: Number,
+          cover: String
+        })
+
+        return mongoose.model('Book', bookSchema);
+      }
+
+      module.exports = new bookModel();
+      #+end_src
+***** controllers/index.js
+      #+name: controllers/index.js
+      #+begin_src js
+      'use strict';
+
+      use Book = require('../models/bookModel');
+
+      module.exports = function (router) {
+        router.get('/', function (req, res) {
+          Book.find({}, function (err, books) {
+            if (err) {
+              console.log(err);
+            }
+
+            var model = {
+              books: books
+            }
+            res.render('index', model);
+          })
+        })
+      }
+      #+end_src
+***** public/templates/index.dust
+      #+name: public/templates/index.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<body}
+        {#books}
+          <div class="large-3 columns book">
+          <img src="/img/{.cover}">
+          <h4>{.title}</h4>
+          <p>{.description}</p>
+          <div class="price">Buy it for <span>${.price}</span></div>
+          <br>
+          <a href="/books/details/{._id}" class="button small">Book Details</a>
+          </div>
+        {/books}
+      {/body}
+      #+end_src
+      debugging/restart, now we're getting books ...
+***** book model
+      #+name:models/bookModel.js
+      #+begin_src js
+
+      // line 16 or so
+      // Shorten Text
+      bookSchema.methods.truncText = function(length) {
+        return this.description.substring(0, length);
+      }
+      #+end_src
+***** controllers/index.js
+      #+name: controllers/index.js
+      #+begin_src js
+      'use strict';
+
+      use Book = require('../models/bookModel');
+
+      module.exports = function (router) {
+        router.get('/', function (req, res) {
+          Book.find({}, function (err, books) {
+            if (err) {
+              console.log(err);
+            }
+
+            // This group of lines was added
+            books.forEach(function(book){
+              book.truncText = book.truncText(50)
+            })
+
+            var model = {
+              books: books
+            }
+            res.render('index', model);
+          })
+        })
+      }
+      #+end_src
+
+***** public/templates/index.dust
+      #+name: public/templates/index.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<body}
+        {#books}
+          <div class="large-3 columns book">
+          <img src="/img/{.cover}">
+          <h4>{.title}</h4>
+          <p>{.truncText}</p>
+          <div class="price">Buy it for <span>${.price}</span></div>
+          <br>
+          <a href="/books/details/{._id}" class="button small">Book Details</a>
+          </div>
+        {/books}
+      {/body}
+      #+end_src
+***** models/categoryModel.js
+      #+name: models/categoryModel.js
+      #+begin_src js
+      'use strict';
+
+      var mongoose = require('mongoose');
+
+      var categoryModel = function() {
+        var categorySchema = mongoose.Schema({
+          name: String,
+        })
+
+        return mongoose.model('Category', categorySchema);
+      }
+
+      module.exports = new categoryModel();
+      #+end_src
+***** controllers/books.js
+      #+name: controllers/books.js
+      #+begin_src js
+      'use strict';
+
+      var Book = require('../models/bookModel');
+      var Category = require('../models/categoryModel');
+
+      module.exports = function(router) {
+        router.get('/', funtcion(req, res));
+          res.render('index');
+        });
+
+        router.get('details/:id', function(req, res) {
+          Book.findOne({_id:req.params.id}, function(err, book) {
+            if(err) {
+              console.log(err);
+            }
+            var model = {
+              book: book
+            };
+
+            res.render('books/details', model);
+          })
+        });
+      }
+      #
+
+      #+end_src
+***** temlplates/books/details.dust
+      #+name: temlplates/books/details.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<body}
+        <div class="large-4 columns book">
+          <img src="/img/{book.cover}">
+        </div>
+        <div class="large-8 columns book">
+          <h2>{book.title}</h2>
+          <ul class="bookInfo">
+            <li>Category: {book.category}</li>
+            <li>Author: {book.author}</li>
+            <li>Publisher: {book.publisher}</li>
+          </ul>
+          <br>
+          <div class="price"><span>${book.price}</span></div>
+          <br>
+          <p>{book.description}</p>
+          <a class="button success">Add to cart</a>
+        </div>
+      {/body}
+      #+end_src
+
+      debugging ...
 **** Admin CRUD - List & Add Books
+     now we're going to work on the manage side of things ..
+***** templates/manage/index.dust
+      #+name: templates/manage/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <h2>Manager</h2>
+        <p> This is the manager area</p>
+      {/body}
+      #+end_src
+***** controllers/manage.js
+      #+name: controllers/manage.js
+      #+begin_src js
+      'use strict';
+      var Book = require('../models/bookModel');
+      var Category = require('../models/categoryModel');
+
+      module.exports = function (router) {
+        router.get('/', function(req, res) {
+          res.render('manage/index');
+        });
+        router.get('/books', function(req, res) {
+          Book.find({}, function (err, books) {
+            if (err) {
+              console.log(err);
+            }
+
+            var model = {
+              books: books
+            }
+
+            res.render('manage/books/index', model);
+          })
+        });
+
+        router.get('/books/add', function(req, res) {
+          Category.find({}, function(err, categories) {
+            if(err) {
+              console.log(err);
+            }
+            var model = {
+              categories: categories
+            }
+
+            res.render('manage/books/add', model);
+          });
+        });
+
+        router.post('/books', function(req, res){
+          var title = req.body.title && req.body.title.trim();
+          var category = req.body.category && req.body.category.trim();
+          var author = req.body.author && req.body.author.trim();
+          var publisher = req.body.publisher && req.body.publisher.trim();
+          var price = req.body.price && req.body.price.trim();
+          var description = req.body.description && req.body.description.trim();
+          var cover = req.body.cover && req.body.cover.trim();
+
+          if (title == '' || price == '') {
+            req.flash('error', "Please fill out required fields.")
+            res.location('/manage/books/add');
+            res.redirect('/manage/books/add');
+          }
+
+          if (isNaN(price)) {
+            req.flash('error', "Price must be a number.")
+            res.location('/manage/books/add');
+            res.redirect('/manage/books/add');
+          }
+
+          var newBook = new Book({
+            title: title,
+            category: category,
+            description: description,
+            author: author,
+            publisher: publisher,
+            cover: cover,
+            price: price
+          });
+
+          new Book.save(function(err) {
+            if (err) {
+              console.log('save error', err);
+            }
+
+            req.flash('success', "Book Added");
+            res.location('/manage/books');
+            res.redirect('/manage/books');
+          });
+        });
+
+        router.get('/categories', function(req, res) {
+          res.render('manage/categories/index');
+        });
+      };
+      #+end_src
+***** templates/manage/books/index.dust
+      #+name: templates/manage/books/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <h2>Books</h2>
+        <p><a href="/manage/books/add">Add Book</a></p>
+        <table>
+          <thead>
+            <tr>
+              <th width="200">ID</th>
+              <th width="200">Book Title</th>
+              <th width="200">Category</th>
+              <th width="180"></th>
+              <th width="180"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {#books}
+            <tr>
+              <td >{._id}</td>
+              <td >{.title}</td>
+              <td >{.category}</td>
+              <td ><a class="button " ><a href="/manage/books/edit/{._id}">Edit</a></td>
+              <td ><a class="button alert removeBook" data-id="{._id}" href="#">Delete</a></td>
+            </tr>
+            {/books}
+          </tbody>
+        </table>
+      {/body}
+      #+end_src
+***** templates/manage/add.dust
+      #+name: templates/manage.add.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Add Book</h2>
+            <form method="post" action="/manage/books">
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Title
+                    <input type="text" name="title" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Author
+                    <input type="text" name="author" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Publisher
+                    <input type="text" name="publisher" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Price
+                    <input type="text" name="price" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Category
+                    <select name="category">
+                    {#categories}
+                      <option value="{.name}">{.name}</option>
+                    {/categories}
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Description
+                    <input type="text" name="description" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Cover URL
+                    <input type="text" name="cover" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <input type="submit" class="button" value="Submit" />
+                </div>
+              </div>
+              <input type="hidden" name="_csrf" value="{_crsf}">
+              </form>
+            </div>
+          </div>
+      {/body}
+      #+end_src
+***** mongodb shell
+      #+name: mongo shell
+      #+begin_src js
+      use tekbooks
+      show collections
+      db.categories.insert({name:'node.js'});
+      db.categories.insert({name:'mongodb'});
+      db.categories.insert({name:'php'});
+      #+end_src
+
+***** index.js
+      setting up flash messages
+      #+name: index.js
+      #+begin_src js
+      var express = require('express');
+      var kraken = require('kraken-js');
+      var flash = require('connect-flash');
+      var db = rqeuire('./lib/db');
+
+      // we also need to setup middleware
+      // Approximately line 28
+      // Connect-Flash
+      app.use(flash());
+      app.use(function (req, res, next) {
+        res.locals.messages = require('express-messages')(req, res);
+        next();
+      });
+      #+end_src
+***** public/templates/layouts/manage.dust
+      adding connect flash to manage
+      #+name: public/templates/layouts/manage.dust
+      #+begin_src html
+      <!-- replace line 33 - 38 -->
+      <div class="row">
+        <div class="large-12 columns">
+          {messages|s}
+          {+body /}
+        </div>
+      </div>
+      #+end_src
+***** public/templates/layouts/master.dust
+      adding connect flash to master
+      #+name: public/templates/layouts/master.dust
+      #+begin_src html
+      <!-- replace line 33 - 38 -->
+      <div class="row">
+        <div class="large-12 columns">
+          {messages|s}
+          {+body /}
+        </div>
+      </div>
+      #+end_src
+     testing all the things!
 **** Admin CRUD - Edit & Delete Books
+*****  
+      #+name:
+      #+begin_src js
+      #+end_src
+***** 
+      #+name:
+      #+begin_src js
+      #+end_src
+***** 
+      #+name:
+      #+begin_src js
+      #+end_src
 **** Shopping Cart - Part A
-**** SHopping Cart - Part B
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
+**** Shopping Cart - Part B
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
+*****
+      #+name:
+      #+begin_src js
+      #+end_src
 *** ChatIO
 **** ChatIO User Interface
 **** Sending Chat Messages
@@ -487,7 +2006,7 @@ npm install -g express-generator
 #+end_src
 
 #+NAME: /app.js
-#+begin_src js 
+#+begin_src js
 app.use(express.static(path.join(__dirname, '/public'));
 #+end_src
 *** Flash Messages
@@ -499,7 +2018,7 @@ app.use(function (req, res, next) {
   res.locals.messsages = reqiures('express-messages')(req, res);
   next();
 });
-#+end_src 
+#+end_src
 *** Session
 #+NAME: /app.js
 #+begin_src js
@@ -508,7 +2027,7 @@ app.use(session({
   saveUnititalized: true,
   resave: true
 }));
-#+end_src 
+#+end_src
 *** Routing
 #+NAME: /app.js
 #+begin_src js
@@ -516,12 +2035,12 @@ app.use(session({
 // we would have to use in order to use the routes in the application
 app.use(‘/’, routes);
 app.use(‘/users’, users);
-#+end_src 
+#+end_src
 #+NAME: /routes/index.js
 #+begin_src js
 // in routes/index.js
 modules.exports = router;
-#+end_src 
+#+end_src
 #+NAME: /routes/users.js
 #+begin_src js
 // Inside routes/users.js
@@ -533,7 +2052,7 @@ var router = express.Router();
 modules.exports = router;
 // if we use use
 router.get(‘/edit’, function … - we are really saying router.get(‘/users/edit’ ...) -- food for thought
-#+end_src 
+#+end_src
 
 *** Multer
 ***** How do you use it?
@@ -580,7 +2099,7 @@ app.use(expressValidator);
 #+end_src
 *** Encryption
 **** bcrypt
-** Articles 
+** Articles
 *** [[https://nodejs.org/en/docs/guides/dont-block-the-event-loop/][Don't block the event loop]]
 **** Remember, the Event Loop should orchestrate client requests, not fulfill them itself. For a complicated task, move the work off of the Event Loop onto a Worker Pool.
 **** [[https://www.owasp.org/index.php/Regular_expression_Denial_of_Service_-_ReDoS][ReDoS - Regular Expression Denial of Service]]
