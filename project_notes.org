@@ -403,20 +403,181 @@ npm start
 #+end_src
 open up web browser to http://localhost:3000
 ***** app.js
-#+NAME: app.js
-#+begin_src js
-var session = require('express-session');
-var multer = require('multer');
-var moment = require('moment');
-#+end_src
+      #+NAME: app.js
+      #+begin_src js
+      var session = require('express-session');
+
+      // File Uploads
+      var multer = require('multer');
+
+      // Date Formating
+      app.locals.moment = require('moment');
+
+      // Add posts to possible routes
+      app.use('/posts', posts);
+      #+end_src
 **** Custom Layout Template
+***** public/stylesheets/style.css
+      #+name: public/stylesheets/style.css
+      #+begin_src css
+      body {
+        font: 15px Helvetica, Arial, san-serif;
+        background: #f4f4f4;
+        color:#666;
+      }
+      
+      .logo {
+        text-align: center;
+        margin:auto;
+        display:block;
+      }
+      
+      .container {
+         width: 750px;
+         border: 1px solid #ccc;
+         margin: 20px auto;
+         padding: 20px;
+         border-top: #83cd39 3px solid;
+      }
+
+      .clr {
+         clear: both;
+      }
+      
+      ul {
+        padding: 0;
+        margin: 0;
+      }
+      
+      h1, h2, h3, p {
+        padding: 5px 0;
+        margin-bottom:0;
+      }
+      
+      p {
+        margin: 0;
+      }
+      
+      nav {
+        background: #404137;
+        color: #fff;
+        overflow: auto;
+        height: 40px;
+        padding: 20px 0 0 10px;
+        font-size: 18px;
+      }
+
+      nav li {
+        float: left;
+        list-style: none;
+      }
+      
+      nav a {
+        padding: 10px;
+        margin: 0 10px;
+        color: #fff;
+        text-decoration: none;
+      }
+      
+      nav a.current, nav a:hover {
+        background: #83cd29;
+        color: #000;
+      }
+      
+      .meta {
+        padding 7px;
+        border: 1px solid #ccc;
+        background: #ccc;
+      }
+      
+      a.more {
+        display:block;
+        width: 80px;
+        background: #404137;
+        color: #fff;
+        padding: 10px;
+        margin-top: 30px;
+        text-decoration: none;
+      }
+
+      .post {
+        border-bottom:1px solid #ccc;
+        padding-bottom: 20px;
+      }
+      .post h1 a {
+        color: #666;
+      }
+
+      #+end_src
 **** Homepage Posts Display
+***** Command Line 
+      #+name: command line
+      #+begin_src sh
+      cd mongodb/bin
+      mongo
+      #+end_src
+***** Command Line - Mongo Console
+      #+name: command line - Mongo Console
+      #+begin_src js
+      use nodeblog
+      db.createCollection('categories');
+      db.createCollection('posts');
+      db.posts.insert({title:'Blog Post One', category: 'Technology', author: "Brad", body: "this is a body", date: IOSDate()});
+      db.posts.insert({title:'Blog Post Two', category: 'Science', author: "Mark", body: "this is a body2", date: IOSDate()});
+      db.posts.find().pretty();
+      #+end_src
+***** routes/index.js
+      #+name: routes/index.js
+      #+begin_src js
+      var express = require('express');
+      var router = express.Router();
+      var mongo = require('mongodb');
+      var db = require('monk')('localhost/nodeblog');
+
+      /* GET homepage */
+      router.get('/', function(req, res, next) {
+        var db = req.db;
+        var posts = db.get('posts');
+
+        posts.find({},{}, function(err, posts){
+          res.render('index', { posts: posts });
+        });
+      });
+      #+end_src
+***** views/index.jade
+      #+name: views/index.jade
+      #+begin_src js
+      extends layout
+
+      block content
+        if posts
+         each post, i in posts
+          .post
+           h1
+            a(href='/posts/show/#{post._id}')
+             =post.title
+           p.meta Posted in #{post.category} by #{post.author} on #{moment(post.date).format("MM-DD-YYYY")}
+           =post.body
+           a.more(href='/posts/show/#{post._id}') Read More
+      #+end_src
 **** Add Posts
 ***** routes/posts.js
     #+name: routes/posts.js
     #+begin_src js
     var express = require('express');
     var router = express.Router();
+    var mongo = require('mongodb');
+    var db = require('monk')('localhost/nodeblog');
+
+    /* GET homepage */
+    router.get('/', function(req, res, next) {
+      var db = req.db;
+      var posts = db.get('posts');
+
+      posts.find({},{}, function(err, posts){
+        res.render('index', { posts: posts });
+      });
+    });
 
     router.get('/add', function(req, res, next) {
        var categories = db.get('categories');
