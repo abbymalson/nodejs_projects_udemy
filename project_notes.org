@@ -373,35 +373,39 @@ Now we have a fully working authentication system ...
 *** Node Blog System
 **** App & Module Setup
 ***** Command Line
-#+NAME: command line
-#+begin_src bash
-npm install -g express
-npm install -g express-generator
-express nodeblog
-cd nodeblog
-#+end_src
+       #+NAME: command line
+       #+begin_src bash
+       # npm install -g express
+       # npm install -g express-generator
+       express nodeblog
+       cd nodeblog
+       #+end_src
 ***** package.json
-#+NAME: package.json
-#+begin_src js
-{
-  "dependencies": {
-    "monk": "~1.0.1",
-    "connect-flash": "*",
-    "express-validator": "*",
-    "express-session": "*",
-    "express-messages": "*",
-    "multer": "*",
-    "moment": "*"
-  }
-}
-#+end_src
+      #+NAME: package.json
+      #+begin_src js
+      {
+        "dependencies": {
+          "mongodb": "*",
+          "monk": "~1.0.1",
+          "monk": "https://github.com/vccabral/monk.git",
+          "connect-flash": "*",
+          "express-validator": "*",
+          "express-session": "*",
+          "express-messages": "*",
+          "multer": "*",
+          "moment": "*"
+        }
+      }
+      #+end_src
+      git path was added to override an error that was occuring when that line was 
+      not present
 ***** Command Line
-#+NAME: command line
-#+begin_src bash
-npm install
-npm start
-#+end_src
-open up web browser to http://localhost:3000
+      #+NAME: command line
+      #+begin_src bash
+      npm install
+      npm start
+      #+end_src
+      open up web browser to http://localhost:3000
 ***** app.js
       #+NAME: app.js
       #+begin_src js
@@ -416,6 +420,88 @@ open up web browser to http://localhost:3000
       // Add posts to possible routes
       app.use('/posts', posts);
       #+end_src
+***** app.js
+      #+NAME: /app.js
+      #+begin_src js
+      var multer = require('multer');
+      var upload = multer({ dest: 'uploads/' });
+      var moment = require('moment');
+      var expressValidator = require('express-validator');
+
+      var mongo = require('mongodb');
+      var db = require('monk')('localhost/nodeblog');
+      // approx line 30 ...
+
+      // Express Session
+      app.use(session({
+        secret : 'secret',
+        saveUninitialized: true,
+        resave: true
+      }));
+
+      // Express Validator
+      app.use(expressValidator({
+        errorFormatter: function(param, msg, value) {
+          var namespace = param.split('.')
+          , root        = namespace.shift()
+          , formParam = root;
+
+          while(namespace.length) {
+              formParam += '[' + namespace.shift() + ']';
+          }
+
+          return {
+              param : formParam,
+              msg   : msg,
+              value : value
+          };
+        }
+      }));
+
+      // Connect-Flash
+      // We want the code sample from express-messages
+      app.use(require('connect-flash')());
+      app.use(function(req, res, next) {
+        res.locals.messages = require('express-messages')(req, res);
+        next();
+      });
+
+      // Make our db accessible to our router
+      app.use(function(req, res, next){
+        req.db = db;
+        next();
+      });
+      #+end_src
+      
+      We are not using bootstrap in this project. We will be making our own 
+      template and layout for the project.
+***** views/layout.jade
+      #+NAME: views/layout.jade
+      #+begin_src js
+      doctype html
+      html
+         head
+            title= title
+            link(rel='stylesheet', href='/stylesheets/style.css');
+         body
+          .container
+           img.logo(src='/images/nodebloglogo.png');
+           nav
+            ul
+             li
+              a(href='/') Home
+             li
+              a(href='/posts/add') Add Post
+             li
+              a(href='categories/add') Add Category
+            
+           block content
+           footer
+            p NodeBlog &copy; 2016
+      #+end_src
+      and at this point, I just realized that this course is 2 years old ... 
+      [[https://www.udemy.com/node-with-react-fullstack-web-development/learn/v4/content][Alternate Node.js course]] - for future consideration, for now, we move
+      forward
 **** Custom Layout Template
 ***** public/stylesheets/style.css
       #+name: public/stylesheets/style.css
@@ -509,6 +595,21 @@ open up web browser to http://localhost:3000
       }
 
       #+end_src
+      
+
+****** public/stylesheets/style.css
+       #+name: public/stylesheets/style.css
+       #+begin_src css
+         body {
+           padding: 50px;
+           font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+         }
+         a {
+           color: #00B7FF;
+         }
+       #+end_src
+       
+
 **** Homepage Posts Display
 ***** Command Line 
       #+name: command line
