@@ -1,8 +1,8 @@
 {
   "name": "tekbooks",
-  "description": "TekBooks",
+  "description": "Simple technology book store",
   "main": "index.js",
-  "author": "Abby",
+  "author": "Brad Traversy",
   "moduleType": [
     "amd"
   ],

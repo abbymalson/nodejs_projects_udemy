@@ -2,8 +2,8 @@
   "generator-kraken": {
     "taskModule": "grunt",
     "lintModule": "eslint",
-    "description": "TekBooks",
-    "author": "Abby",
+    "description": "Simple technology book store",
+    "author": "Brad Traversy",
     "templateModule": "makara",
     "i18n": "i18n",
     "componentPackager": "bower",
