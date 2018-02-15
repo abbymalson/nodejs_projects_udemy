@@ -2083,7 +2083,7 @@ Now we have a fully working authentication system ...
                   <label>Category
                     <select name="category">
                     {#categories}
-                      <option value="{.name}">{.name}</option>
+                    <option value="{.name}">{.name}</option>
                     {/categories}
                     </select>
                   </label>
@@ -2168,43 +2168,535 @@ Now we have a fully working authentication system ...
       #+end_src
      testing all the things!
 **** Admin CRUD - Edit & Delete Books
-*****  
-      #+name:
+***** controllers/manage.js
+      #+name: controllers/manage.js
       #+begin_src js
+      router.get('/books/edit/:id', function (req, res) {
+        Category.find({}, function(err, categories) {
+          Book.findOne({_id:req.params.id}, function(err, book) {
+            if (err) {
+              console.log(err);
+            }
+            var model ={
+              book: book,
+              categories: categories
+            };
+            res.render('manage/books/edit', model);
+          });
+        });
+      });
+
+      router.post('/books/edit/:id', function(req, res){
+        var title = req.body.title && req.body.title.trim();
+        var category = req.body.category && req.body.category.trim();
+        var author = req.body.author && req.body.author.trim();
+        var publisher = req.body.publisher && req.body.publisher.trim();
+        var price = req.body.price && req.body.price.trim();
+        var description = req.body.description && req.body.description.trim();
+        var cover = req.body.cover && req.body.cover.trim();
+
+        if (title == '' || price == '') {
+          req.flash('error', "Please fill out required fields.")
+          res.location('/manage/books/add');
+          res.redirect('/manage/books/add');
+        }
+
+        if (isNaN(price)) {
+          req.flash('error', "Price must be a number.")
+          res.location('/manage/books/add');
+          res.redirect('/manage/books/add');
+        }
+
+        Book.update(
+         {_id: req.prarams.id}, {
+           title: title,
+           category: category,
+           author: author,
+           publisher: publisher,
+           price: price,
+           description: description,
+           cover: cover
+         } ,function(err) {
+          if (err) {
+            console.log('update error', err);
+          }
+
+          req.flash('success', "Book updated");
+          res.location('/manage/books');
+          res.redirect('/manage/books');
+        });
+      });
+
+      router.post('/books/delete/:id', function (req, res) {
+        Book.remove({_id: req.params.id}, function (err) {
+          if (err) {
+            console.log(err);
+          }
+          req.flash('success', "Book Deleted");
+          res.location('/manage/books');
+          res.redirect('/manage/books');
+        });
+      });
+
+      router.get('/categories', function(req, res) {
+        Category.find({}, function(err, categories){
+          if(err){
+            console.log(err);
+          }
+
+          var model = {
+            categories: categories
+          };
+          res.render('manage/categories/index');
+        })
+      });
+
+      // Display category add form
+      router.get('/categories/add', function (req, res) {
+        res.render('manage/categories/add');
+      });
+
+      // Add new category
+      router.post('/categories', function(req, res){
+        var name = req.body.title && req.body.title.trim();
+
+        if (name == '' ) {
+          req.flash('error', "Please fill out required fields.")
+          res.location('/manage/books/add');
+          res.redirect('/manage/books/add');
+        }
+
+        var newCategory = new Category({
+          name: name
+        });
+
+        newCategory.save(function(err) {
+          if (err) {
+            console.log('save category error', err);
+          }
+
+          req.flash('success', "category added");
+          res.location('/manage/categories');
+          res.redirect('/manage/categories');
+        });
+      });
+
+      router.get('/categories/edit/:id', function (req, res) {
+        Category.find({}, function(err, category) {
+          Category.findOne({_id:req.params.id}, function(err, category) {
+            if (err) {
+              console.log(err);
+            }
+            var model ={
+              category: category
+            };
+            res.render('manage/categories/edit', model);
+          });
+        });
+      });
+
+      router.post('/categories/edit/:id', function(req, res){
+        var name = req.body.name && req.body.name.trim();
+
+        if (name == '' ) {
+          req.flash('error', "Please fill out required fields.")
+          res.location('/manage/books/add');
+          res.redirect('/manage/books/add');
+        }
+
+        Category.update(
+         {_id: req.prarams.id}, {
+           name: name,
+         } ,function(err) {
+          if (err) {
+            console.log('update error', err);
+          }
+
+          req.flash('success', "category updated");
+          res.location('/manage/categories');
+          res.redirect('/manage/categories');
+        });
+      });
+
+      router.post('/categories/delete/:id', function (req, res) {
+        Book.remove({_id: req.params.id}, function (err) {
+          if (err) {
+            console.log(err);
+          }
+          req.flash('success', "category Deleted");
+          res.location('/manage/category');
+          res.redirect('/manage/category');
+        });
+      });
+
       #+end_src
-***** 
-      #+name:
-      #+begin_src js
+***** public/tempaltes/manage/books/edit.dust
+      #+name: public/templates/manage/books/edit.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Add Book</h2>
+            <form method="post" action="/manage/books/edit/{book._id}">
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Title
+                    <input type="text" name="title" value="{book.title}"/>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Author
+                    <input type="text" name="author" value="{book.author}"/>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Publisher
+                    <input type="text" name="publisher" value="{book.publisher}" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Price
+                    <input type="text" name="price" value="{book.price}"/>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Category
+                    <select name="category">
+                    {#categories}
+                      <option value="{.name}">{.name}</option>
+                    {/categories}
+                    </select>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Description
+                    <textarea name="description">{book.description}</textarea>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Cover URL
+                    <input type="text" name="cover" value="{book.cover}"/>
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <input type="submit" class="button" value="Submit" />
+                </div>
+              </div>
+              <input type="hidden" name="_csrf" value="{_crsf}">
+              </form>
+            </div>
+          </div>
       #+end_src
-***** 
-      #+name:
-      #+begin_src js
+***** public/templates/manage/categories/index.dust
+      #+name: public/templates/manage/categories/index.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <h2>Categories</h2>
+        <p><a href="/manage/categories/add">Add Categories</a></p>
+        <table>
+          <thead>
+            <tr>
+              <th width="200">ID</th>
+              <th width="200">Category Name</th>
+              <th width="180"></th>
+              <th width="180"></th>
+            </tr>
+          </thead>
+          <tbody>
+          {#categories}
+           <tr>
+             <td>{._id}</td>
+             <td>{.name}</td>
+             <td><a class="button" href="/manage/categories/edit/{._id}">Edit</a></td>
+             <td>
+               <form method="post" action="/manage/categories/delete/{._id}">
+               <input type="submit" value="Delete" class="button alert" />
+               <input type="hidden" name='_csrf" value={_csrf}" />
+               <input type="hidden" name="_method" value="DELETE" />
+               </form>
+             </td>
+           </tr>
+          {/categories}
+         </tbody>
+        </table>
+      #+end_src
+***** public/tempaltes/manage/categories/add.dust
+      #+name: public/tempaltes/manage/categories/add.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Add Category</h2>
+            <form method="post" action="/manage/categories">
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Name
+                    <input name="name" type="text" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <input type="submit" class="button" value="Submit">
+                </div>
+              </div>
+              <input type="hidden" name="_csrf" value="{_csrf}">
+            </form>
+          </div>"
+        </div>
+      {/body}
+      #+end_src
+***** public/tempaltes/manage/categories/edit.dust
+      #+name: public/tempaltes/manage/categories/edit.dust
+      #+begin_src html
+      {>"layouts/manage" /}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Add Category</h2>
+            <form method="post" action="/manage/categories/edit/{category._id}">
+              <div class="row">
+                <div class="large-12 columns">
+                  <label>Name
+                    <input name="name" type="text" value="{category.name}" />
+                  </label>
+                </div>
+              </div>
+              <div class="row">
+                <div class="large-12 columns">
+                  <input type="submit" class="button" value="Submit">
+                </div>
+              </div>
+              <input type="hidden" name="_csrf" value="{_csrf}">
+            </form>
+          </div>"
+        </div>
+      {/body}
       #+end_src
 **** Shopping Cart - Part A
-*****
-      #+name:
-      #+begin_src js
+***** public/templates/books/details.dust
+      #+name: public/templates/books/details.dust
+      #+begin_src html
+      {>"layouts/master" /}
+
+      {<body}
+        <div class="large-4 columns book">
+          <img src="{book.cover}">
+        </div>
+        <div class="large-8 columns book">
+          <h2>{book.title}</h2>
+          <ul class="bookInfo">
+            <li>Category: {book.category}</li>
+            <li>Author: {book.author}</li>
+            <li>Publisher: {book.publisher}</li>
+          </ul>
+          <br>
+          <div class="price"><span>${book.price}</span></div>
+          <br>
+          <p>{book.description}</p>
+          <form method="post" action="/cart/{book._id}">
+            <input type="submit" class="button success" value="Add to Cart">
+            <input type="hidden" value="{_csrf}" name="_csrf">
+          </form>"
+        </div>
+      {/body}
       #+end_src
-*****
-      #+name:
+***** controllers/cart.js
+      #+name: controllers/cart.js
       #+begin_src js
+      'use strict';
+      var Book = require('../models/bookModel');
+      var Category = require('../models/categoryModel');
+
+      module.exports = function(router) {
+        router.get('/', function(req, res) {
+          // Get cart from session
+          var cart = req.sesion.cart;
+          var displayCart = {items: [], total: 0};
+          var total = 0;
+
+          // get total
+          for (var item in cart) {
+            displayCart.items.push(cart[item]);
+            total += (cart[item].qty *cart[item].price);
+          }
+          displayCart.total = total;
+
+          // Render Cart
+          res.render('cart/index', {
+            cart: displayCart
+          });
+        });
+      }
       #+end_src
-*****
-      #+name:
-      #+begin_src js
+***** public/templates/cart/index.dust
+      #+name: public/templates/cart/index.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<title}
+      {/title}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Shopping Cart
+              <span>
+                <a href="/cart/remove">Empty Cart</a>
+              </span>
+            </h2>
+            {?cart.items}
+              <table>
+                <thead>
+                  <tr>
+                    <th width="650">Item</th>
+                    <th width="100">Quantity</th>
+                    <th width="100">Total</th>
+                    <th width="100"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#cart.items}
+                    <tr>
+                      <td><a href="books/details/{._id}">{.title}</a></td>
+                      <td>{.qty}</td>
+                      <td>${@math key="{.price}" method="multiply" operand="{.qty}" /}</td>
+                    </tr>
+                  {/cart.items}
+                  <tr>
+                  </tr>
+                </tbody>
+              </table>
+            {:else}
+              <p>There are no items in your cart</p>
+            {/cart.items}
+          </div>
+        </div>"
+      {/body}
       #+end_src
+***** locales/US/cart/index.properties
+      #+name: locales/US/cart/index.properties
+      #+begin_src
+      #+end_src
+      just creating an empty file for translations (just need to have the file
+      there)
 **** Shopping Cart - Part B
-*****
-      #+name:
+***** controllers/cart.js
+      #+name: controllers/cart.js
       #+begin_src js
+
+      router.post('/:id', function(req, res) {
+        req.session.cart = req.sesion.cart || {};
+        var cart = req.session.cart;
+        Book.findOne({_id: req.params.id}, function(err, book) {
+          if (err) {
+            console.log(err);
+          }
+
+          if (cart[req.params.id]){
+            cart[req.params.id].qty++;
+          } else {
+            cart[req.params.id] = {
+              item: book._id,
+              title: book.title,
+              price: book.price,
+              qty: 1`
+            }
+          }
+
+          res.redirect('/cart');
+        })
+      })
       #+end_src
-*****
+***** command line
       #+name:
-      #+begin_src js
+      #+begin_src bash
+      npm install dustjs-helpers --save
       #+end_src
-*****
+***** config/config.json
       #+name:
       #+begin_src js
+      // about line 24
+      "dust": {
+        "helpers": [
+          "dustjs-helpers",
+          "dust-makara-helpers"
+        ]
+      },
+      #+end_src
+      Grand total and checkout
+***** public/templates/cart/index.dust
+      #+name: public/templates/cart/index.dust
+      #+begin_src html
+      {>"layouts/master" /}
+      {<title}
+      {/title}
+
+      {<body}
+        <div class="row">
+          <div class="large-12 columns">
+            <h2>Shopping Cart
+              <span>
+                <a href="/cart/remove">Empty Cart</a>
+              </span>
+            </h2>
+            {?cart.items}
+              <table>
+                <thead>
+                  <tr>
+                    <th width="650">Item</th>
+                    <th width="100">Quantity</th>
+                    <th width="100">Total</th>
+                    <th width="100"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {#cart.items}
+                    <tr>
+                      <td><a href="books/details/{._id}">{.title}</a></td>
+                      <td>{.qty}</td>
+                      <td>${@math key="{.price}" method="multiply" operand="{.qty}" /}</td>
+                    </tr>
+                  {/cart.items}
+                  <tr>
+                  </tr>
+                </tbody>
+              </table>
+            {:else}
+              <p>There are no items in your cart</p>
+            {/cart.items}
+          </div>
+        </div>
+        <div class="row">
+          <div class="large-6 columns">
+            <h4>Total: <strong>${cart.total}</strong></h4>
+          </div>
+          <div class="large-6 columns">
+          <!-- paste code from paypal button -->
+          <!-- see last few minutes if you want all of th info -->
+          </div>
+        </div>"
+      {/body}
       #+end_src
 *** ChatIO
 **** ChatIO User Interface
