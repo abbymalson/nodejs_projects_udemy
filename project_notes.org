@@ -2700,7 +2700,138 @@ Now we have a fully working authentication system ...
       #+end_src
 *** ChatIO
 **** ChatIO User Interface
+     http://socket.io/docs
+     we're going to use sockets
+     open connection between client and server
+     makes everything pretty much instant
+     
+     using node with express
+     create a new folder called chatio
+     #+name: index.html
+     #+begin_src html
+     <!doctype html>
+     <head>
+       <title>ChatIO</title>
+       <style>
+         body {
+           background:#f9f9f9;
+         }
+         
+         #container {
+           width:700px;
+           margin: 0 auto;
+         }
+         
+         #chatWindow {
+           height: 300px;
+         }
+         
+         #mainWrapper {
+           display: none;
+         }
+         
+         #chatWrapper {
+           float: left;
+           border 1px #ccc solid;
+           border-radius: 10px;
+           background: #f4f4f4;
+           padding: 10px;
+         }
+         
+         #userWrapper {
+           float: left;
+           border 1px #ccc solid;
+           border-radius: 10px;
+           background: #f4f4f4;
+           padding: 10px;
+           margin-left:20px;
+           width: 150px;
+           max-height:200px;
+         }
+
+         #namesWrapper {
+           float: left;
+           border 1px #ccc solid;
+           border-radius: 10px;
+           background: #f4f4f4;
+           padding: 10px;
+           margin-left:20px;
+         }
+
+         input {
+           height: 30px;
+         }
+       </style>
+     </head>
+     <body>
+
+       <div id="container">
+         <div id="namesWrapper">
+           <h2>ChatIO</h2>
+           <p>Create Username:</p>
+           <form id="usernameForm">
+             <input type="text" size="35" id="username">
+             <input type="submit" value="Submit">
+           </form>
+         </div>
+         
+         <div id="mainWrapper">
+           <h2>ChatIO</h2>
+           <div id="chatWindow"></div>
+           <form id="messageForm">
+             <input type="text" size="35" id="message" placeholder="Say Something...">
+             <input type="submit" value="Submit">
+           </form>
+         </div>
+
+         <div id="userWrapper">
+           <div id="users"></div>
+         </div>
+       </div>
+     </body>
+     </html>
+     #+end_src
+     
+     
 **** Sending Chat Messages
+     #+name: command line
+     #+begin_src sh
+     npm init
+     # chatio
+     #+end_src
+     #+name: package.json
+     #+begin_src json
+     {
+        "name": "chatio",
+        "version": "1.0.0",
+        "description": "Simple chat app";
+        "main": "server.js",
+        "scripts": {
+          "test": "echo \"Error: no test specified\" && exit 1"
+        },
+        "author": "Brad T",
+        "license": "ISC","
+        "dependencies": {
+          "socket.io": "*",
+          "express": "*"
+        }
+     }
+     #+end_src
+     #+name: command line
+     #+begin_src sh
+     npm install
+     # installs socket.io and express
+     #+end_src
+     #+name: server.js
+     #+begin_src js
+     var express = require('express'),
+         app = express(),
+         server = require('http').createServer(app),
+         io = require('socket.io').listen(server);
+
+     server.listen(process.env.PORT || 3000);[]
+     #+end_src
+
 **** User Functionality
 **** Deploying an App with Heroku
 *** FindaDoc Directory
