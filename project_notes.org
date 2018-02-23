@@ -2700,11 +2700,13 @@ Now we have a fully working authentication system ...
       #+end_src
 *** ChatIO
 **** ChatIO User Interface
+     start with node server
+
      http://socket.io/docs
      we're going to use sockets
      open connection between client and server
      makes everything pretty much instant
-     
+
      using node with express
      create a new folder called chatio
      #+name: index.html
@@ -2716,20 +2718,19 @@ Now we have a fully working authentication system ...
          body {
            background:#f9f9f9;
          }
-         
+
          #container {
            width:700px;
            margin: 0 auto;
          }
-         
+
          #chatWindow {
            height: 300px;
          }
-         
+
          #mainWrapper {
-           display: none;
          }
-         
+
          #chatWrapper {
            float: left;
            border 1px #ccc solid;
@@ -2737,7 +2738,7 @@ Now we have a fully working authentication system ...
            background: #f4f4f4;
            padding: 10px;
          }
-         
+
          #userWrapper {
            float: left;
            border 1px #ccc solid;
@@ -2750,6 +2751,7 @@ Now we have a fully working authentication system ...
          }
 
          #namesWrapper {
+           display: none;
            float: left;
            border 1px #ccc solid;
            border-radius: 10px;
@@ -2769,12 +2771,13 @@ Now we have a fully working authentication system ...
          <div id="namesWrapper">
            <h2>ChatIO</h2>
            <p>Create Username:</p>
+           <div id="error"></div>"
            <form id="usernameForm">
              <input type="text" size="35" id="username">
              <input type="submit" value="Submit">
            </form>
          </div>
-         
+
          <div id="mainWrapper">
            <h2>ChatIO</h2>
            <div id="chatWindow"></div>
@@ -2787,12 +2790,56 @@ Now we have a fully working authentication system ...
          <div id="userWrapper">
            <div id="users"></div>
          </div>
+
+         <script src="http://code.jquery.com/jquery-latest.min.js"></script>"
+         <script src="/socket.io/socket.io.js"></script>
+         <script>
+         $(function() {
+           var socket = io.connect();
+           var $messageForm = $('#messageForm');
+           var $message = $('#message');
+           var $chat = $('#chatWindow');
+           var $usernameForm = $('#usernameForm');
+           var $error = $('#error');
+
+           $usernameForm.submit(function(e){
+             e.preventDefault();
+             socket.emit('new user', $username.val(), function(data) {
+               if(data) {
+                 $('#namesWrapper').hide();
+                 $('#mainWrapper').show();
+               } else {
+                 $error.html('Username is taken');
+               }
+             })
+           });
+           
+           socket.on('usernames', function(data){
+             var html = '';
+             for(i = 0; i < data.length; i++) {
+               html += data[i] +'<br>';
+             }
+             $users.html(html);
+             })
+           })
+
+           $messageForm.submit(function(e){
+             e.preventDefault();
+             socket.emit('send message', $message.val());
+             $message.val('');
+           });
+
+           socket.on('new message', function(data) {
+             $chat.append('<strong>'+ data.user + '</strong>: ' + $data.msg+'<br>');
+           })
+         })
+         </script>
        </div>
      </body>
      </html>
      #+end_src
-     
-     
+
+
 **** Sending Chat Messages
      #+name: command line
      #+begin_src sh
@@ -2828,15 +2875,133 @@ Now we have a fully working authentication system ...
          app = express(),
          server = require('http').createServer(app),
          io = require('socket.io').listen(server);
+         usernames = [];
 
      server.listen(process.env.PORT || 3000);[]
+     console.log('Server running...')
+
+     app.get('/', function(req, res) {
+       res.sendFile(__dirname + '/index.html');
+     });
+     
+     io.sockets.on('connection', function(socket) {
+       console.log('socket connected...');
+       
+       // new user
+       socket.on('new user', function(data, callback) {
+         if(usernames.indexOf(data) != -1) {
+           callback(false);
+         
+         } else {
+           callback(true);
+           socket.username = data;
+           usernames.push(socket.username);
+           updateUsernames();
+         }
+       })
+       
+       // Update usernames
+       function updateUsernames() {
+         io.sockets.emit('usernames', usernames);
+       }
+       
+       // send message
+       socket.on('send message', function(data) {
+         io.sockets.emit('new message', {msg: data , user: socket.username });
+       })
+
+       // Disconnect
+       socket.on('disconnect', function(data){
+         if(!socket.username){
+           return;
+         }
+         usernames.splice(usernames.indexOf(socket.username), 1);
+         updateUsernames();
+       })
+     })
      #+end_src
 
 **** User Functionality
+     we are creating uesrs in this section, so we are editing some of our old files
+     server.js we are addding the usernames array to old all of the usernames
+     (updated the files in the other headings ...)
 **** Deploying an App with Heroku
+     going over how to deploy to heroku (from windows)
+     use installer
+
+     heroku login (from command line)
+     email
+     password
+     
+     follow getting started steps in heroku
+
+     heroku create
+
+     now you have an app
+
+     git push heroku master
+     
+     heroku open
+
+     heroku ps:scale web=1
+
+     define procfile
+
+     Procfile
+     web: node app.js
+     
+     git add .
+
+     git commit -m "added procfile"
+     
+     git push heroku master
+
+     heroku logs
+
+     heroku ps:scale web=1
 *** FindaDoc Directory
 **** Cassandra Install & Setup
+     using cassandra database
+     going over project
+     how to use cassandra with nodejs
+
+     doctor directory
+
+     layout or template
+     free-css-templates.com
+     
+     column type database - nosqql database
+
+     http://cassandra.apache.org/download -apache stacks
+
+     run "Cassandra cql shell" as administrator
+     create database
+     key spaces
+
+     #+begin_src
+     CREATE KEYSPACE findadoc WITH REPLICATION - {'class':'SimpleStrategy', 'replication_factor': 3};
+     DESCRIBE KEYSPACES
+     
+     DESCRIBE KEYSPACE findadoc
+
+     CREATE TABLE doctors(doc_id uuid, full_name text, category text, practice_name text, street_address text, city text, state text, new patients boolean, graduation_year int, PRIMARY KEY(doc_id, full_name, category, city, state));
+
+     CREATE INDEX on doctors (state);
+     CREATE TABLE categories(cat_id uuid PRIMARY KEY);
+
+     INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) VALUES(now(), 'william k samson md', 'neurologist, 'family medical', '30 congress st', 'boston', 'ma', true, 1997);
+     SELECT * FROM doctors;
+     INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) VALUES(now(), 'tom k sammy md', 'gastro intestinal', 'private practice', '30 congress st', 'boston', 'ma', true, 1997);
+     DROP TABLE findadoc.categories;
+create table categories(cat_id uuid, name text, PRIMARY KEY(cat_id));
+insert into categories(cat_id, name) VALUES('now(), 'Neurologist');
+insert into categories(cat_id, name) VALUES('now(), 'General');
+     #+end_src
+     
 **** FindaDoc User Interface
+     create a new folder htmldev
+     create a new folder css, images
+     create a new file index.html
 **** Express Setup
 **** Express Layout
 **** Fetch Doctors From Cassandra
