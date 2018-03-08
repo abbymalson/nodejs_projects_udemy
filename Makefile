@@ -18,6 +18,14 @@ run-tekbooks:
 	# server runs on http://localhost:8000
 	cd TekBooks && npm start
 
+run-chatio:
+	# server runs on http://localhost:3000
+	cd chatio && npm start
+
+run-findadoc:
+  # server runs on http://localhost:
+	cd findadoc
+
 ######### Database setup commands for apps ###########
 setup-db-nodeblog:
 	# use nodeblog
@@ -32,6 +40,12 @@ setup-db-tekbooks:
   # so that we can name things/setup the project, not necessary now
 	mongo tekbooks setup-tekbooks.js
 
+setup-db-findadoc:
+	# install cassandra
+	# brew install cassandra
+	# cqlsh -e "CREATE KEYSPACE findadoc WITH REPLICATION = {'class':'SimpleStrategy', 'replication_factor': 1}"
+	cqlsh -f setup-findadoc.cql -k "findadoc"
+
 ######### Mongo Setup Commands ###########
 setup-mongo:
 	mkdir -p data/db
@@ -44,3 +58,7 @@ start-mongo:
 install-mongo-osx:
 	brew install mongo
 
+
+########## Cassandra Commands
+start-cassandra:
+	/usr/local/bin/cassanrda

@@ -2709,6 +2709,7 @@ Now we have a fully working authentication system ...
 
      using node with express
      create a new folder called chatio
+***** index.html
      #+name: index.html
      #+begin_src html
      <!doctype html>
@@ -2841,11 +2842,13 @@ Now we have a fully working authentication system ...
 
 
 **** Sending Chat Messages
+***** command line
      #+name: command line
      #+begin_src sh
      npm init
      # chatio
      #+end_src
+***** package.json
      #+name: package.json
      #+begin_src json
      {
@@ -2864,11 +2867,13 @@ Now we have a fully working authentication system ...
         }
      }
      #+end_src
+***** command line
      #+name: command line
      #+begin_src sh
      npm install
      # installs socket.io and express
      #+end_src
+***** server.js
      #+name: server.js
      #+begin_src js
      var express = require('express'),
@@ -2929,11 +2934,18 @@ Now we have a fully working authentication system ...
      going over how to deploy to heroku (from windows)
      use installer
 
+***** command line
+     #+name: command line
+     #+begin_src sh
      heroku login (from command line)
      email
      password
+     #+end_src
      
      follow getting started steps in heroku
+***** command line
+     #+name: command line
+     #+begin_src sh
 
      heroku create
 
@@ -2944,12 +2956,20 @@ Now we have a fully working authentication system ...
      heroku open
 
      heroku ps:scale web=1
+     #+end_src
 
      define procfile
 
-     Procfile
+***** Procfile
+     #+name: Procfile 
+     #+begin_src 
      web: node app.js
+     #+end_src
      
+***** command line
+     #+name: command line
+     #+begin_src sh
+
      git add .
 
      git commit -m "added procfile"
@@ -2959,6 +2979,7 @@ Now we have a fully working authentication system ...
      heroku logs
 
      heroku ps:scale web=1
+     #+end_src
 *** FindaDoc Directory
 **** Cassandra Install & Setup
      using cassandra database
@@ -2977,37 +2998,713 @@ Now we have a fully working authentication system ...
      run "Cassandra cql shell" as administrator
      create database
      key spaces
+     #+name: importing external files
+     #+begin_src sh
+     cqlsh -f <file name> -k <keyspace name>
+     #+end_src
+     #+name: executing cqlsh on command line
+     #+begin_src sh
+     cqlsh -e "command"
+     cqlsh -e "SELECT * FROM mytable"
+     #+end_src
 
-     #+begin_src
-     CREATE KEYSPACE findadoc WITH REPLICATION - {'class':'SimpleStrategy', 'replication_factor': 3};
-     DESCRIBE KEYSPACES
-     
-     DESCRIBE KEYSPACE findadoc
+     #+name: sql
+     #+begin_src sql
+      CREATE KEYSPACE findadoc WITH REPLICATION - {'class':'SimpleStrategy', 'replication_factor': 3};
+      DESCRIBE KEYSPACES
 
-     CREATE TABLE doctors(doc_id uuid, full_name text, category text, practice_name text, street_address text, city text, state text, new patients boolean, graduation_year int, PRIMARY KEY(doc_id, full_name, category, city, state));
+      DESCRIBE KEYSPACE findadoc
 
-     CREATE INDEX on doctors (state);
-     CREATE TABLE categories(cat_id uuid PRIMARY KEY);
+      CREATE TABLE doctors(doc_id uuid, full_name text, category text, practice_name text, street_address text, city text, state text, new patients boolean, graduation_year int, PRIMARY KEY(doc_id, full_name, category, city, state));
 
-     INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) VALUES(now(), 'william k samson md', 'neurologist, 'family medical', '30 congress st', 'boston', 'ma', true, 1997);
-     SELECT * FROM doctors;
-     INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) VALUES(now(), 'tom k sammy md', 'gastro intestinal', 'private practice', '30 congress st', 'boston', 'ma', true, 1997);
-     DROP TABLE findadoc.categories;
-create table categories(cat_id uuid, name text, PRIMARY KEY(cat_id));
-insert into categories(cat_id, name) VALUES('now(), 'Neurologist');
-insert into categories(cat_id, name) VALUES('now(), 'General');
+      CREATE INDEX on doctors (state);
+      CREATE TABLE categories(cat_id uuid PRIMARY KEY);
+
+      INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) 
+      VALUES(now(), 'william k samson md', 'neurologist', 'family medical', '30 congress st', 'boston', 'ma', true, 1997);
+      SELECT * FROM doctors;
+      INSERT INTO doctors(doc_id, full_name, category, practice_name, street_adress, city, state, new_patients, graduation_year) 
+      VALUES(now(), 'tom k sammy md', 'general', 'private practice', '31 congress st', 'boston', 'ma', true, 1997);
+      DROP TABLE findadoc.categories;
+      CREATE TABLE categories(cat_id uuid, name text, PRIMARY KEY(cat_id));
+      INSERT INTO categories(cat_id, name) VALUES(now(), 'Neurologist');
+      INSERT INTO categories(cat_id, name) VALUES(now(), 'General');
      #+end_src
      
 **** FindaDoc User Interface
      create a new folder htmldev
      create a new folder css, images
      create a new file index.html
+***** index.html
+     #+name: index.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <h2>Welcome to FindaDoc</h2>
+              <p>We will help you find a doctor in your area</p>
+              <br>
+              <form>
+                <select>
+                  <option value="0"Select a State</option>
+                  ...
+                  <option value="CA">California</option>
+                  <option value="CO">Colorado</option>
+                </select>
+              </form>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** doctors.html
+     #+name: doctors.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <h2>Welcome to FindaDoc</h2>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** add-category.html
+     #+name: add-category.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <h2>Welcome to FindaDoc</h2>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** doctors.html
+     #+name: doctors.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <h2>Browse Doctors</h2>
+              <br>
+              <ul class="docs">
+                <li>
+                  <h3>Dr Someone</h3>
+                  <p>Specialty: General</p>
+                  <p>Location: Boston, MA</p>
+                  <p><a href="details.html">&gt;Details</a></p>
+                </li>
+                <li>
+                  <h3>Dr Someone</h3>
+                  <p>Specialty: General</p>
+                  <p>Location: Boston, MA</p>
+                  <p><a href="details.html">&gt;Details</a></p>
+                </li>
+                <li>
+                  <h3>Dr Someone</h3>
+                  <p>Specialty: General</p>
+                  <p>Location: Boston, MA</p>
+                  <p><a href="details.html">&gt;Details</a></p>
+                </li>
+              </ul>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** add-doctor.html
+     #+name: add-doctor.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <h2>Add Doctor</h2>
+              <br>
+              <form>
+                <div>
+                  <label>Full Name:</label>
+                  <input type="text" name="full_name">
+                </div>
+                ... Blah
+              </form>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** details.html
+     #+name: details.html
+     #+begin_src html
+     <!DOCTYPE html>
+        <head>
+          <title>Find a Doctor</title>
+          <meta>
+          <meta>
+          <link rel="stylesheet" href="style.css" media="screen" type="text/css" />
+        </head>
+        <body>
+        <div id="wrap">
+          <div id="header">
+            <h1><a href="#">FindaDoc</a></h1>
+            <h2>Search for local Doctors</h2>
+          </div>
+
+          <div id="menu">
+            <ul>
+              <li><a href="index.html">Home</a></li>
+              <li><a href="doctors.html">Browse Doctors</a></li>
+              <li><a href="add-doctor.html">Add Doctor</a></li>
+              <li><a href="add-category.html">Add Category</a></li>
+            </ul>           
+          </div>
+
+          <div id="content">
+            <div id="left">
+              <a href="index.html">&lt; Go back</a> <br />
+              <h2>Details</h2>
+            </div>
+            <div id="right">
+              <h2>Categories :</h2>
+              <ul>
+                <li><a href="#">General</a></li>
+                <li><a href="#">Cardiologist</a></li>
+              </ul>
+            </div>
+            <div id="footer">
+              Designed by blah
+            </div>
+          </div>
+        </body>
+     </html>
+     #+end_src
+***** style.css     
+     #+name: style.css
+     #+begin_src css
+     ul.docs li {
+       float: left;
+       list-style: none;
+       width: 50%;
+       margin-bottom:20px;
+     }
+     
+     label {
+       display: inline-block;
+       width: 180px;
+     }
+
+     form div {
+       margin: 10px 0
+     }
+     #+end_src
+     adding css, adding details ... 
 **** Express Setup
+node + express + node handlebars - alternative for jade
+website with express framework
+routing + http server
+npm install -g express
+nodemailer
+jade - template engine
+new folder - express_website
+app.js
+package.json
+***** command line
+     #+name: command line
+     #+begin_src sh
+npm init
+     #+end_src
+
+dependencies
+  body-parser
+  express
+  jade
+  nodemailer
+
+***** command line
+      #+name: command line
+      #+begin_src sh
+npm install
+      #+end_src
+there is a node_modules folder
+
+
+***** app.js
+      #+name: app.js
+      #+begin_src js
+      var express = require('express');
+      var path = require('path'); // root module
+      var bodyParser = require('body-parser');
+      require nodemailer = require('nodemailer');
+
+      var app = express();
+
+      app.use(bodyParser.json());
+      app.use(bodyParser.urlencoded({extended: false}));
+
+      app.get('/',function(req, res){
+        console.log('Hello world');
+        res.send('Hello World');
+      })
+
+      app.listen(3000);
+
+      console.log('server is running on port 3000');
+
+      #+end_src
+node app
+console output
+port is running on port 3000
+
 **** Express Layout
+adding routes and templating
+
+routes/index.js
+index.html
+views/layouts/main.handlebars
+
+views/partials/categories.handlebars (it needs to be partials, you can change that setting, but we aren't going over that)
+paste what we have and save it
+
+{{>categories}}
+
+new folder
+/css/style.css
+link to that file 
+
+update main.handlebars Links
+/
+/doctors
+/doctors/add
+/categories/add
+
+routes/doctors.js
+
+var express
+var router
+
+add-doctors.handlebars
+
+router.get('/add', function(res, req) {
+
+});
+
+add forms now
+
+views/add-doctors.handlebars
+views/add-categories.handlebars
+
+
+now we are going to do cassandra step
 **** Fetch Doctors From Cassandra
+so now we want to grab doctors from databaseConfig
+
+***** routes/doctors.js
+#+name: routes/doctors.js
+#+begin_src js
+
+var cassandra = require('cassandra-driver');
+var client = new cassandra.Client({contactPoints:['127.0.0.1']});
+client.connect(function(err, result){
+  console.log('cassandra Connected');
+});
+
+router.get('/', function(req, res, next) {
+  var query = "SELECT * FROM findadoc.doctors";
+  client.execute(query, [], function(err, results) {
+    if(err) {
+      res.status(404).send({msg: err});
+    } else {
+      res.render('doctors', {
+        doctors:results.rows
+      })
+    }
+  }
+})
+
+router.get('/details/:id', function(req, res, next) {
+  var query = "SELECT * FROM findadoc.doctors WHERE doc_id = ?";
+  client.execute(query, [req.params.id], function(err, results) {
+    if(err) {
+      res.status(404).send({msg: err});
+    } else {
+      res.render('details', {
+        doctors:result.rows['0']
+      })
+    }
+  }
+})
+#+end_src
+
+***** doctors.handlebars
+#+name: doctors.handlebars
+#+begin_src html
+<ul class="docs">
+{{#each doctors}}
+  <li>
+    <h3>{{full_name}}</h3>
+    <p>Specialty: {{category}}</p>
+    <p>Location: {{city}}, {{state}}</p>
+    <p><a href="/doctors/details/{{doc_id}}">&gt; details</a>
+  </li>
+{{/each}}
+
+details.handlebars
+<h2>{{doctor.full_name}}
+{{doctor.new_patients}}
+{{doctor.graduation_year}}
+{{doctor.city}} {{doctor.state}}
+#+end_src
+
+***** app.js
+
+global query, so in app.js
+#+name: global variables node
+#+begin_src js
+
+var app.local.cats - global variable
+#+end_src
 **** Add & Search Doctors
+***** /routes/doctors.js
+     #+name: /routes/doctors.js
+     #+begin_src js
+      router.post('/add', function(req, res, next) {
+        var doc_id = cassandra.types.uuid();
+        var query = "INSERT INTO findadoc.doctors(doc_id, full_name, category, new_patients, graduation_year, practice_name, street_address, city, state) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        client.execute(query,
+        [
+          doc_id,
+          req.body.full_name,
+          req.body.category,
+          req.body.new_patients,
+          req.body.graduation_year,
+          req.body.practice_name,
+          req.body.street_address,
+          req.body.city,
+          req.body.state,
+          ], {prepare: true}, function(err, result) {
+            if (err) {
+              res.status(404).send({msg: err});
+            } else {
+              res.location('/doctors');
+              res.redirect('/doctors');
+
+            }
+          })
+        })
+    #+end_src
 *** Portfolio App
 **** MySQL & App Setup
+installing xampp
+run control panel as administrator
+http://localhost/phpmyadmin
+
+make a password for root, because best practices
+
+create database portfolio
+projects table
+id, int, primary, auto increment
+title varchar 255
+description text
+client varchar 255
+service varchar 255
+url varchar 255
+date date
+create_date datetime current_time
+
+now we have a projects table
+
+new portfolio folder
+
+npm init
+
+app.js
+
+package.json
+------
+dependencies
+------
+body-parser
+express
+multer
+mysql
+connect-flash
+express-messages
+express-handlebars
+express-validator
+express-session
+moment
+
+npm install
+
+Front end: foundation
+
+paste in a bunch of stuff
+
+app.js
+var express = require('express');
+var path = require('path');
+var bodyParser = require('bodyParser');
+var exphbs = require('express-handlebars');
+var expressValidator = require('express-validator');
+var session = require('express-session');
+var flash = require('connect-flash');
+var multer = require('multer');
+var upload = multer({dest: './public/images/portfolio'})
+
+// route files
+var routes = require('./routes/index');
+var admin = require('routes/admin');
+
+// Init app
+var app = express();
+
+// Body parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false }));
+
+// Handle Sessions
+app.use(session({
+  secret:'secret',
+  saveUnititalized: true,
+  resave: true
+}))
+
+// Validator
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+    var namespace = param.split('.')
+    , root       = namespace.shift()
+    , formParam  = root;
+
+    while(namespace.length) {
+      formParam += '[' +namespace+shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    }
+  }
+}))
+
+// Public folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// View engine
+app.set('views', path.join(__dirname, 'views'));
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+// Connect Flash
+app.use(flash());
+
+app.use('/', routes);
+app.use('/admin', admin);
+
+app.set('port', (process.env.PORT || 3000));
+
+app.listen(app.get('port'), function(){
+  console.log('Server started on port: ' + app.get('port'));
+})
+
+new folder - routes
+/routes/index.js
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  res.render('index');
+})
+
+modules.exports = router;
+/routes/admin.js
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  res.render('admin/index');
+})
+
+modules.exports = router;
+
+new folders/files
+views/admin/add.handlebars
+views/admin/edit.handlebars
+views/admin/index.handlebars
+INDEX
+views/layouts/main.handlebars
+<html>
+<head>
+<title>Portfolio</title>
+</head>
+<body>
+{{{body}}}
+views/details.handlebars
+views/index.handlebars
+public/css/style.css
+public/js/main.js
+public/images
 **** Add Projects
 **** Display Projects
 **** Edit & Delete Projects

@@ -1,0 +1,134 @@
+2018-02-13T20:52:53.454Z I CONTROL  [initandlisten] MongoDB starting : pid=1049 port=27017 dbpath=/Users/abby/code/nodejs/data/db 64-bit host=AbbyBook.local
+2018-02-13T20:52:53.454Z I CONTROL  [initandlisten] db version v3.6.2
+2018-02-13T20:52:53.454Z I CONTROL  [initandlisten] git version: 489d177dbd0f0420a8ca04d39fd78d0a2c539420
+2018-02-13T20:52:53.454Z I CONTROL  [initandlisten] OpenSSL version: OpenSSL 1.0.2n  7 Dec 2017
+2018-02-13T20:52:53.454Z I CONTROL  [initandlisten] allocator: system
+2018-02-13T20:52:53.455Z I CONTROL  [initandlisten] modules: none
+2018-02-13T20:52:53.455Z I CONTROL  [initandlisten] build environment:
+2018-02-13T20:52:53.455Z I CONTROL  [initandlisten]     distarch: x86_64
+2018-02-13T20:52:53.455Z I CONTROL  [initandlisten]     target_arch: x86_64
+2018-02-13T20:52:53.455Z I CONTROL  [initandlisten] options: { config: "mongodb.config.yaml", net: { bindIp: "127.0.0.1", port: 27017 }, processManagement: { fork: true }, storage: { dbPath: "data/db", directoryPerDB: true, journal: { enabled: true } }, systemLog: { destination: "file", logAppend: true, path: "data/db/mongodb.log", timeStampFormat: "iso8601-utc" } }
+2018-02-13T20:52:53.457Z I STORAGE  [initandlisten] wiredtiger_open config: create,cache_size=7680M,session_max=20000,eviction=(threads_min=4,threads_max=4),config_base=false,statistics=(fast),log=(enabled=true,archive=true,path=journal,compressor=snappy),file_manager=(close_idle_time=100000),statistics_log=(wait=0),verbose=(recovery_progress),
+2018-02-13T20:52:53.656Z I CONTROL  [initandlisten] 
+2018-02-13T20:52:53.657Z I CONTROL  [initandlisten] ** WARNING: Access control is not enabled for the database.
+2018-02-13T20:52:53.657Z I CONTROL  [initandlisten] **          Read and write access to data and configuration is unrestricted.
+2018-02-13T20:52:53.657Z I CONTROL  [initandlisten] 
+2018-02-13T20:52:53.665Z I STORAGE  [initandlisten] createCollection: admin.system.version with provided UUID: e45e8f9d-ed9a-4fce-881f-1bbf415b0b41
+2018-02-13T20:52:53.708Z I COMMAND  [initandlisten] setting featureCompatibilityVersion to 3.6
+2018-02-13T20:52:53.714Z I STORAGE  [initandlisten] createCollection: local.startup_log with generated UUID: 48e383c4-2c09-4e6a-be57-e53f1c6682da
+2018-02-13T20:52:53.753Z I FTDC     [initandlisten] Initializing full-time diagnostic data capture with directory '/Users/abby/code/nodejs/data/db/diagnostic.data'
+2018-02-13T20:52:53.755Z I NETWORK  [initandlisten] waiting for connections on port 27017
+2018-02-13T20:54:43.440Z I NETWORK  [listener] connection accepted from 127.0.0.1:51079 #1 (1 connection now open)
+2018-02-13T20:54:43.453Z I STORAGE  [conn1] createCollection: nodeauth.users with generated UUID: 366801a6-41b9-407b-ac31-d516a85c6532
+2018-02-13T20:54:43.519Z I INDEX    [conn1] build index on: nodeauth.users properties: { v: 2, key: { username: 1 }, name: "username_1", ns: "nodeauth.users", background: true }
+2018-02-13T20:54:43.522Z I INDEX    [conn1] build index done.  scanned 0 total records. 0 secs
+2018-02-13T20:57:53.759Z I STORAGE  [thread2] createCollection: config.system.sessions with generated UUID: 934aabd9-43fc-4501-83a8-1ae0179aa374
+2018-02-13T20:57:53.825Z I INDEX    [thread2] build index on: config.system.sessions properties: { v: 2, key: { lastUse: 1 }, name: "lsidTTLIndex", ns: "config.system.sessions", expireAfterSeconds: 1800 }
+2018-02-13T20:57:53.829Z I INDEX    [thread2] 	 building index using bulk method; build may temporarily use up to 500 megabytes of RAM
+2018-02-13T20:57:53.840Z I INDEX    [thread2] build index done.  scanned 0 total records. 0 secs
+2018-02-13T21:08:58.639Z I NETWORK  [listener] connection accepted from 127.0.0.1:52164 #2 (2 connections now open)
+2018-02-13T21:08:58.640Z I NETWORK  [conn2] received client metadata from 127.0.0.1:52164 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:08:58.644Z I STORAGE  [conn2] createCollection: nodeblog.categories with generated UUID: 097546b7-2e2c-4c02-9433-5cf445de2a69
+2018-02-13T21:08:58.685Z I STORAGE  [conn2] createCollection: nodeblog.posts with generated UUID: 2c944302-3f0d-426a-ba1a-66f3a31c59bc
+2018-02-13T21:08:58.735Z I NETWORK  [conn2] end connection 127.0.0.1:52164 (1 connection now open)
+2018-02-13T21:09:19.063Z I NETWORK  [listener] connection accepted from 127.0.0.1:52191 #3 (2 connections now open)
+2018-02-13T21:09:19.064Z I NETWORK  [conn3] received client metadata from 127.0.0.1:52191 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:09:19.075Z I NETWORK  [conn3] end connection 127.0.0.1:52191 (1 connection now open)
+2018-02-13T21:09:28.828Z I NETWORK  [listener] connection accepted from 127.0.0.1:52205 #4 (2 connections now open)
+2018-02-13T21:09:28.828Z I NETWORK  [conn4] received client metadata from 127.0.0.1:52205 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:09:28.845Z I NETWORK  [conn4] end connection 127.0.0.1:52205 (1 connection now open)
+2018-02-13T21:09:50.005Z I NETWORK  [listener] connection accepted from 127.0.0.1:52236 #5 (2 connections now open)
+2018-02-13T21:09:50.007Z I NETWORK  [conn5] received client metadata from 127.0.0.1:52236 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:21:26.305Z I NETWORK  [conn5] end connection 127.0.0.1:52236 (1 connection now open)
+2018-02-13T21:23:06.313Z I NETWORK  [listener] connection accepted from 127.0.0.1:53460 #6 (2 connections now open)
+2018-02-13T21:23:06.316Z I NETWORK  [conn6] received client metadata from 127.0.0.1:53460 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:23:06.318Z I STORAGE  [conn6] createCollection: tekbooks.books with generated UUID: 8ba00a2e-6eb6-4b6a-b793-5243f05458cb
+2018-02-13T21:23:06.377Z I STORAGE  [conn6] createCollection: tekbooks.categories with generated UUID: 3a9175b0-83db-4601-a35f-c4d8574e9891
+2018-02-13T21:23:06.428Z I NETWORK  [conn6] end connection 127.0.0.1:53460 (1 connection now open)
+2018-02-13T21:23:15.782Z I NETWORK  [listener] connection accepted from 127.0.0.1:53473 #7 (2 connections now open)
+2018-02-13T21:23:15.782Z I NETWORK  [conn7] received client metadata from 127.0.0.1:53473 conn: { application: { name: "MongoDB Shell" }, driver: { name: "MongoDB Internal Client", version: "3.6.2" }, os: { type: "Darwin", name: "Mac OS X", architecture: "x86_64", version: "17.4.0" } }
+2018-02-13T21:23:57.834Z I NETWORK  [conn7] end connection 127.0.0.1:53473 (1 connection now open)
+2018-02-13T21:24:33.973Z I NETWORK  [listener] connection accepted from 127.0.0.1:53594 #8 (2 connections now open)
+2018-02-13T21:24:33.974Z I NETWORK  [listener] connection accepted from 127.0.0.1:53595 #9 (3 connections now open)
+2018-02-13T21:24:33.974Z I NETWORK  [listener] connection accepted from 127.0.0.1:53596 #10 (4 connections now open)
+2018-02-13T21:24:33.974Z I NETWORK  [listener] connection accepted from 127.0.0.1:53597 #11 (5 connections now open)
+2018-02-13T21:24:33.982Z I NETWORK  [conn8] end connection 127.0.0.1:53594 (4 connections now open)
+2018-02-13T21:24:33.983Z I NETWORK  [conn9] end connection 127.0.0.1:53595 (3 connections now open)
+2018-02-13T21:24:33.984Z I NETWORK  [conn10] end connection 127.0.0.1:53596 (2 connections now open)
+2018-02-13T21:24:33.985Z I NETWORK  [conn11] end connection 127.0.0.1:53597 (1 connection now open)
+2018-02-13T21:24:33.986Z I NETWORK  [listener] connection accepted from 127.0.0.1:53598 #12 (2 connections now open)
+2018-02-13T21:24:33.987Z I NETWORK  [listener] connection accepted from 127.0.0.1:53599 #13 (3 connections now open)
+2018-02-13T21:24:33.987Z I NETWORK  [listener] connection accepted from 127.0.0.1:53600 #14 (4 connections now open)
+2018-02-13T21:24:33.987Z I NETWORK  [listener] connection accepted from 127.0.0.1:53601 #15 (5 connections now open)
+2018-02-13T21:24:38.869Z I NETWORK  [conn1] end connection 127.0.0.1:51079 (4 connections now open)
+2018-02-13T21:24:51.684Z I NETWORK  [listener] connection accepted from 127.0.0.1:53621 #16 (5 connections now open)
+2018-02-13T21:25:31.354Z I NETWORK  [conn16] end connection 127.0.0.1:53621 (4 connections now open)
+2018-02-13T21:25:38.710Z I NETWORK  [listener] connection accepted from 127.0.0.1:53745 #17 (5 connections now open)
+2018-02-13T21:30:58.894Z I NETWORK  [conn15] end connection 127.0.0.1:53601 (4 connections now open)
+2018-02-13T21:30:58.894Z I NETWORK  [conn14] end connection 127.0.0.1:53600 (3 connections now open)
+2018-02-13T21:30:58.894Z I NETWORK  [conn12] end connection 127.0.0.1:53598 (2 connections now open)
+2018-02-13T21:30:58.894Z I NETWORK  [conn13] end connection 127.0.0.1:53599 (1 connection now open)
+2018-02-13T21:32:03.112Z I NETWORK  [listener] connection accepted from 127.0.0.1:54314 #18 (2 connections now open)
+2018-02-13T21:32:59.830Z I NETWORK  [conn18] end connection 127.0.0.1:54314 (1 connection now open)
+2018-02-13T21:42:13.929Z I NETWORK  [conn17] end connection 127.0.0.1:53745 (0 connections now open)
+2018-02-13T21:42:35.906Z I NETWORK  [listener] connection accepted from 127.0.0.1:55150 #19 (1 connection now open)
+2018-02-13T21:42:35.906Z I NETWORK  [listener] connection accepted from 127.0.0.1:55151 #20 (2 connections now open)
+2018-02-13T21:42:35.906Z I NETWORK  [listener] connection accepted from 127.0.0.1:55152 #21 (3 connections now open)
+2018-02-13T21:42:35.906Z I NETWORK  [listener] connection accepted from 127.0.0.1:55153 #22 (4 connections now open)
+2018-02-13T21:42:35.913Z I NETWORK  [conn19] end connection 127.0.0.1:55150 (3 connections now open)
+2018-02-13T21:42:35.915Z I NETWORK  [conn20] end connection 127.0.0.1:55151 (2 connections now open)
+2018-02-13T21:42:35.916Z I NETWORK  [conn21] end connection 127.0.0.1:55152 (1 connection now open)
+2018-02-13T21:42:35.916Z I NETWORK  [conn22] end connection 127.0.0.1:55153 (0 connections now open)
+2018-02-13T21:42:35.918Z I NETWORK  [listener] connection accepted from 127.0.0.1:55154 #23 (1 connection now open)
+2018-02-13T21:42:35.919Z I NETWORK  [listener] connection accepted from 127.0.0.1:55155 #24 (2 connections now open)
+2018-02-13T21:42:35.919Z I NETWORK  [listener] connection accepted from 127.0.0.1:55156 #25 (3 connections now open)
+2018-02-13T21:42:35.919Z I NETWORK  [listener] connection accepted from 127.0.0.1:55157 #26 (4 connections now open)
+2018-02-13T21:45:47.015Z I NETWORK  [conn23] end connection 127.0.0.1:55154 (3 connections now open)
+2018-02-13T21:45:47.015Z I NETWORK  [conn24] end connection 127.0.0.1:55155 (2 connections now open)
+2018-02-13T21:45:47.015Z I NETWORK  [conn25] end connection 127.0.0.1:55156 (1 connection now open)
+2018-02-13T21:45:47.015Z I NETWORK  [conn26] end connection 127.0.0.1:55157 (0 connections now open)
+2018-02-13T21:45:50.573Z I NETWORK  [listener] connection accepted from 127.0.0.1:55380 #27 (1 connection now open)
+2018-02-13T21:45:50.573Z I NETWORK  [listener] connection accepted from 127.0.0.1:55381 #28 (2 connections now open)
+2018-02-13T21:45:50.573Z I NETWORK  [listener] connection accepted from 127.0.0.1:55382 #29 (3 connections now open)
+2018-02-13T21:45:50.573Z I NETWORK  [listener] connection accepted from 127.0.0.1:55383 #30 (4 connections now open)
+2018-02-13T21:45:50.581Z I NETWORK  [conn27] end connection 127.0.0.1:55380 (3 connections now open)
+2018-02-13T21:45:50.582Z I NETWORK  [conn28] end connection 127.0.0.1:55381 (2 connections now open)
+2018-02-13T21:45:50.583Z I NETWORK  [conn29] end connection 127.0.0.1:55382 (1 connection now open)
+2018-02-13T21:45:50.583Z I NETWORK  [conn30] end connection 127.0.0.1:55383 (0 connections now open)
+2018-02-13T21:45:50.586Z I NETWORK  [listener] connection accepted from 127.0.0.1:55384 #31 (1 connection now open)
+2018-02-13T21:45:50.586Z I NETWORK  [listener] connection accepted from 127.0.0.1:55385 #32 (2 connections now open)
+2018-02-13T21:45:50.586Z I NETWORK  [listener] connection accepted from 127.0.0.1:55386 #33 (3 connections now open)
+2018-02-13T21:45:50.587Z I NETWORK  [listener] connection accepted from 127.0.0.1:55387 #34 (4 connections now open)
+2018-02-13T21:46:23.665Z I NETWORK  [conn32] end connection 127.0.0.1:55385 (3 connections now open)
+2018-02-13T21:46:23.665Z I NETWORK  [conn34] end connection 127.0.0.1:55387 (2 connections now open)
+2018-02-13T21:46:23.665Z I NETWORK  [conn31] end connection 127.0.0.1:55384 (1 connection now open)
+2018-02-13T21:46:23.665Z I NETWORK  [conn33] end connection 127.0.0.1:55386 (0 connections now open)
+2018-02-13T21:46:50.086Z I NETWORK  [listener] connection accepted from 127.0.0.1:55478 #35 (1 connection now open)
+2018-02-13T21:54:21.371Z I NETWORK  [conn35] end connection 127.0.0.1:55478 (0 connections now open)
+2018-02-13T21:57:57.069Z I NETWORK  [listener] connection accepted from 127.0.0.1:56552 #36 (1 connection now open)
+2018-02-13T21:57:57.076Z I NETWORK  [conn36] received client metadata from 127.0.0.1:56552 conn: { driver: { name: "nodejs", version: "3.0.2" }, os: { type: "Darwin", name: "darwin", architecture: "x64", version: "17.4.0" }, platform: "Node.js v8.9.4, LE, mongodb-core: 3.0.2" }
+2018-02-13T22:59:59.496Z I NETWORK  [conn36] end connection 127.0.0.1:56552 (0 connections now open)
+2018-02-13T23:12:05.138Z I NETWORK  [listener] connection accepted from 127.0.0.1:63642 #37 (1 connection now open)
+2018-02-13T23:12:23.283Z I NETWORK  [conn37] end connection 127.0.0.1:63642 (0 connections now open)
+2018-02-13T23:12:30.747Z I NETWORK  [listener] connection accepted from 127.0.0.1:63697 #38 (1 connection now open)
+2018-02-13T23:12:30.747Z I NETWORK  [listener] connection accepted from 127.0.0.1:63698 #39 (2 connections now open)
+2018-02-13T23:12:30.747Z I NETWORK  [listener] connection accepted from 127.0.0.1:63699 #40 (3 connections now open)
+2018-02-13T23:12:30.748Z I NETWORK  [listener] connection accepted from 127.0.0.1:63700 #41 (4 connections now open)
+2018-02-13T23:12:30.756Z I NETWORK  [conn38] end connection 127.0.0.1:63697 (3 connections now open)
+2018-02-13T23:12:30.758Z I NETWORK  [conn39] end connection 127.0.0.1:63698 (2 connections now open)
+2018-02-13T23:12:30.759Z I NETWORK  [conn40] end connection 127.0.0.1:63699 (1 connection now open)
+2018-02-13T23:12:30.761Z I NETWORK  [conn41] end connection 127.0.0.1:63700 (0 connections now open)
+2018-02-13T23:12:30.763Z I NETWORK  [listener] connection accepted from 127.0.0.1:63701 #42 (1 connection now open)
+2018-02-13T23:12:30.763Z I NETWORK  [listener] connection accepted from 127.0.0.1:63702 #43 (2 connections now open)
+2018-02-13T23:12:30.764Z I NETWORK  [listener] connection accepted from 127.0.0.1:63703 #44 (3 connections now open)
+2018-02-13T23:12:30.764Z I NETWORK  [listener] connection accepted from 127.0.0.1:63704 #45 (4 connections now open)
+2018-02-13T23:14:05.244Z I NETWORK  [conn43] end connection 127.0.0.1:63702 (3 connections now open)
+2018-02-13T23:14:05.244Z I NETWORK  [conn44] end connection 127.0.0.1:63703 (2 connections now open)
+2018-02-13T23:14:05.244Z I NETWORK  [conn42] end connection 127.0.0.1:63701 (1 connection now open)
+2018-02-13T23:14:05.244Z I NETWORK  [conn45] end connection 127.0.0.1:63704 (0 connections now open)
+2018-02-13T23:14:13.519Z I NETWORK  [listener] connection accepted from 127.0.0.1:63903 #46 (1 connection now open)
+2018-02-13T23:14:13.534Z I NETWORK  [conn46] received client metadata from 127.0.0.1:63903 conn: { driver: { name: "nodejs", version: "3.0.2" }, os: { type: "Darwin", name: "darwin", architecture: "x64", version: "17.4.0" }, platform: "Node.js v8.9.4, LE, mongodb-core: 3.0.2" }
+2018-02-13T23:16:43.470Z I NETWORK  [conn46] end connection 127.0.0.1:63903 (0 connections now open)
+2018-02-14T04:30:16.300Z I COMMAND  [ftdc] serverStatus was very slow: { after basic: 0, after asserts: 0, after backgroundFlushing: 0, after connections: 0, after dur: 0, after extra_info: 0, after globalLock: 0, after locks: 0, after logicalSessionRecordCache: 7201129, after network: 7201129, after opLatencies: 7201129, after opcounters: 7201129, after opcountersRepl: 7201129, after repl: 7201129, after security: 7201129, after storageEngine: 7201129, after wiredTiger: 7201167, at end: 7201202 }
+2018-02-16T00:59:14.201Z I COMMAND  [PeriodicTaskRunner] task: UnusedLockCleaner took: 225ms
+2018-02-16T01:21:51.932Z I COMMAND  [PeriodicTaskRunner] task: DBConnectionPool-cleaner took: 143ms
