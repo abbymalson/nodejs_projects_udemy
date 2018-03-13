@@ -12,14 +12,20 @@ ONBUILD ENV NODE_ENV $NODE_ENV
 #WORKRDIR /usr/src/app
 
 #ONBUILD COPY package*.json /usr/src/app
-ONBUILD COPY package*.json ./
+COPY package*.json ./
 
-ONBUILD RUN npm install && npm cache clean --force
+RUN npm install && npm cache clean --force
 
 
 # Bundle app source
-ONBUILD COPY . /usr/src/app
+COPY . /usr/src/app
 
 EXPOSE 3000
 
-CMD [ "npm", "start"]
+# CMD npm start
+# RUN npm start
+
+# Copy the init script
+COPY docker-entrypoint.sh /
+RUN chmod +x /docker-entrypoint.sh
+CMD /docker-entrypoint.sh
