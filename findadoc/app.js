@@ -4,8 +4,9 @@ var exphbs = require('express-handlebars');
 var bodyParser = require('body-parser');
 var cassandra = require('cassandra-driver');
 
-var client = new cassandra.Client({contactPoints:['127.0.0.1']});
+var client = new cassandra.Client({contactPoints:['cassandra']}); // ['127.0.0.1']});
 client.connect(function(err, result){
+    console.log('error: ' + err)
 });
 
 var routes = require('./routes/index');
@@ -26,7 +27,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 var query = "SELECT * FROM findadoc.categories";
   client.execute(query, [], function(err, results){
     if(err){
-      res.status(404).send({msg: err});
+//      res.status(404).send({msg: err});
+        console.log({msg: err});
     } else {
      app.locals.cats = results.rows;
     }
