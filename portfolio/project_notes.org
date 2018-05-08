@@ -1,0 +1,696 @@
+* Portfolio App
+  Project 9, portfolio application for web designer/developer
+
+  built using foundation (similar to bootstrap)
+  crud application, (create, read, update, delete)
+** Setup Environment
+*** Mysql - so they're installing xampp
+*** Our exercise is to build it using docker? maybe we can do it
+    (I did get the docker cookbook ... maybe there is something in there that I can
+use).
+
+**** Database
+Portfolio
+
+***** Table:
+Projects
+
+****** Columns:
+id int primary
+title varchar 255
+description text
+client varchar 255
+service varchar 255
+url varchar 255
+image varchar 255
+date date
+create_date datetime current_timestamp
+
+**** package.json
+#+begin_src javascript
+dependencies: {
+  "body-parser": "*",
+  "express": "*",
+  "express-validator": "*",
+  "express-handlebars": "*",
+  "connect-flash": "*",
+  "express-session": "*",
+  "moment": "*",
+  "multer": "*",
+  "mysql": "*",
+}
+#+end_src
+
+**** app.js
+#+begin_src javascript
+var express = require('express');
+var path = require('path');
+var bodyParser = require('body-parser');
+var exphbs = require('express-handlebars');
+var expressValidator = require('express-validator');
+var session = require('express-session');
+var flash = require('connect-flash');
+var multer = require('multer');
+var upload = multer({ dest: './public/images/portfolio'});
+
+// Route Files
+var routes = require('./routes/index');
+var admin = require('./routes/admin');
+
+// Init App
+var app = express();
+
+// Body Parser
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: false}));
+
+// Handle Sessions
+app.use(session({
+  secret:'secret',
+  saveUnitialized: true,
+  resave: true
+}))
+
+// Validator
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+    var namespace = param.split('.')
+    , root = namespace.shift()
+    , formParam = root;
+
+    while (namespace.length) {
+      formParam += '[' + . namespace.shift + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+}));
+
+// Public Folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// View Engine
+app.set('views', path.join(__dirname, 'views'));
+app.engine('handlebars', exphbs({defaultLayout: 'main'}));
+app.set('view engine', 'handlebars');
+
+// Connect flash
+app.use(flash());
+
+app.use('/', routes);
+app.use('/admin', admin);
+
+app.set('port', process.env.PORT || 3000);
+
+app.listen(app.get('port', function(){
+  console.log('server started on port: ' + app.get('port'));
+});
+#+end_src
+
+
+**** routes/index.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  res.render('admin');
+});
+
+module.exports = router;
+#+end_src
+
+
+**** routes/admin.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  res.render('admin/index');
+});
+
+module.exports = router;
+#+end_src
+
+**** views/index.handlebars
+#+begin_src javascript
+#+end_src
+
+**** views/details.handlebars
+#+begin_src javascript
+#+end_src
+
+**** views/admin/add.handlebars
+#+begin_src javascript
+#+end_src
+
+**** views/admin/edit.handlebars
+#+begin_src javascript
+#+end_src
+
+**** views/admin/index.handlebars
+#+begin_src javascript
+#+end_src
+
+**** views/details.handlebars
+#+begin_src html
+#+end_src
+
+**** views/layouts/index.handlebars
+#+begin_src javascript
+INDEX
+#+end_src
+
+**** views/layouts/main.handlebars
+#+begin_src javascript
+Portfolio
+{{{body}}}}
+#+end_src
+
+**** public/css/style.css
+#+begin_src stylesheet
+#+end_src
+
+**** public/js/main.js
+#+begin_src javascript
+#+end_src
+
+*** starting the app
+node app
+
+See the site at http://localhost:3000
+
+Download foundation
+bring over the foundation.css to the css folder
+bring over the foundation.js to the js folder
+
+borrow the portfolio template
+
+** Add Projects
+**** views/layouts/main.handlebars
+#+begin_src html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Portfolio</title>
+  <link rel="stylesheet" href="/css/foundation.css">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  Put Portfolio template from Foundation here
+  Add a footer link to admin secttion ...
+</body>
+</html>
+#+end_src
+
+we don't like th bottom part, so we'll get rid of that
+
+We'll also get rid of all the column/stuff
+
+we'll put the {{{body}}} tag back in
+
+we'll move the stuff we removed into the index.handlebars page
+we plan to loop over that stuff so we'll get back to that
+we'll also put a link to the admin section into the main.handlebars page
+  <a href="/admin">Admin Area</a>
+
+**** views/admin/index.handlebars
+#+begin_src html
+<a href="/admin/add" class="button success">Add Project"</a>
+#+end_src
+
+**** public/css/style.css
+#+begin_src stylesheet
+.padding{padding:10px;}
+#+end_src
+
+**** routes/admin.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function(req, res, next) {
+  res.render('admin/index');
+});
+
+router.get('/add', function(req, res, next) {
+  res.render('admin/add');
+});
+
+module.exports = router;
+#+end_src
+
+**** views/admin/add.handlebars
+#+begin_src html
+<h1>Add Project</h1>
+FORM GOES HERE
+#+end_src
+
+now we want to handle method of saving the data to the database
+
+**** routes/admin.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+var multer = require('multer');
+var upload = multer({dest: './public/images/portfolio'});
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'portfolio'
+});
+
+connection.connect();
+
+router.get('/', function(req, res, next) {
+  res.render('admin/index');
+});
+
+router.get('/add', function(req, res, next) {
+  res.render('admin/add');
+});
+
+router.post('/add', upload.single('projectimage'), function(req, res, next) {
+  var title = req.body.title;
+
+  // Check Image upload
+  if (req.file) {
+    var projectImageName = req.file.filename
+  }
+
+  req.checkBody('title', 'Title field is required').notEmpty();
+
+  var errors = req.validationErrors();
+
+  if(errorrs){
+    res.render('admin/add, {
+      errors: errors,
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      url: url
+    })
+  } else {
+    var project = {
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      date: projectdate,
+      url: url
+      image: projectImageName
+    };
+  }
+
+  var query = connection.query('INSERT INTO projects SET ?', project, function(err, result){
+    console.log('Error: '+err);
+    console.log('Success: '+result);
+  });
+
+  req.flash('success_msg', 'Project Added');
+
+  res.redirect('/admin');
+});
+
+module.exports = router;
+#+end_src
+**** Database table project altered
+They added image
+
+** Display Projects
+
+**** routes/index.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'portfolio'
+});
+
+connection.connect();
+
+
+router.get('/', function(req, res, next) {
+  connection.query("SELECT * FROM projects", function(err, rows, fields){
+    if(err) throw err;
+    res.render('index', {
+      "projects": rows
+    })
+  })
+});
+
+router.get('/details/:id', function(req, res, next) {
+  connection.query("SELECT * FROM projects WHERE id = ?", function(err, rows, fields){
+    if(err) throw err;
+    res.render('details', {
+      "projects": rows[0]
+    })
+  })
+});
+
+
+module.exports = router;
+#+end_src
+
+**** views/index.handlebars
+#+begin_src html
+{{#if projects}}
+  {{#each projects}}
+    <div class="column">
+    <img class="thumbnail" src="/images/portfolio/{{image}}">
+    <h5 class="text-center">{{title}}</h5>
+    <p class="text-center show"><a href="/details/{{id}}">Show More</a></p>
+    </div>
+  {{/each}}
+{{else}}
+  <p>No Projects</p>
+{{/if}}
+#+end_src
+
+**** routes/admin.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+var multer = require('multer');
+var upload = multer({dest: './public/images/portfolio'});
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'portfolio'
+});
+
+connection.connect();
+
+
+router.get('/', function(req, res, next) {
+  connection.query("SELECT * FROM projects", function(err, rows, fields){
+    if(err) throw err;
+    res.render('admin/index', {
+      "projects": rows
+    })
+  })
+});
+
+router.get('/add', function(req, res, next) {
+  res.render('admin/add');
+});
+
+router.post('/add', upload.single('projectimage'), function(req, res, next) {
+  var title = req.body.title;
+
+  // Check Image upload
+  if (req.file) {
+    var projectImageName = req.file.filename
+  }
+
+  req.checkBody('title', 'Title field is required').notEmpty();
+
+  var errors = req.validationErrors();
+
+  if(errorrs){
+    res.render('admin/add, {
+      errors: errors,
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      url: url
+    })
+  } else {
+    var project = {
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      date: projectdate,
+      url: url
+      image: projectImageName
+    };
+  }
+
+  var query = connection.query('INSERT INTO projects SET ?', project, function(err, result){
+    console.log('Error: '+err);
+    console.log('Success: '+result);
+  });
+
+  req.flash('success_msg', 'Project Added');
+
+  res.redirect('/admin');
+});
+
+module.exports = router;
+#+end_src
+
+**** views/admin/index.handlebars
+#+begin_src html
+{{#if projects}}
+  <table class="table table-striped">
+    <tr>
+      <th></th>
+      <th>ID</th>
+      <th>Title</th>
+      <th>Service</th>
+      <th></th>
+    </tr>
+  {{#each projects}}
+    <tr>
+      <td><img class="small-img" src="/images/portfolio/{{image}}"></td>
+      <td>{{id}}</td>
+      <td>{{title}}</td>
+      <td>{{service}}</td>
+      <td>
+        <a href="/admin/edit/{{id}}" class="button default">Edit</a>
+        <a href="/admin/delete/{{id}}" data-id="{{id}}" class="button alert delete-project">Delete</a>
+      </td>
+    </tr>
+  {{/each}}
+  </table>
+{{else}}
+  <p>No Projects</p>
+{{/if}}
+#+end_src
+
+**** views/details.handlebars
+#+begin_src html
+<a href="/">Go Back</a>
+<h1>{{project.title}}</h1>
+<div class="row">
+  <div class="large-6 columns">
+    <img src="/images/portfolio/{{project.image}}">
+  </div>
+  <div class="large-6 columns">
+    <ul>
+      <li><strong>Project: </strong>{{project.title}}</li>
+      <li><strong>Client: </strong>{{project.client}}</li>
+      <li><strong>Service: </strong>{{project.service}}</li>
+      <li><strong>Date: </strong>{{project.date}}</li>
+    </ul>
+    <hr />
+    <p>{{project.description}}</p>
+    <br />
+    <a href="{{project.url}}">Visit Website</a>
+  </div>
+</div>
+#+end_src
+
+**** public/css/style.css
+#+begin_src stylesheet
+.padding{padding:10px;}
+.small-img{width:80px;}
+#+end_src
+
+** Edit and Delete Projecs
+
+**** routes/admin.js
+#+begin_src javascript
+var express = require('express');
+var router = express.Router();
+var multer = require('multer');
+var upload = multer({dest: './public/images/portfolio'});
+var mysql = require('mysql');
+
+var connection = mysql.createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: 'password',
+  database: 'portfolio'
+});
+
+connection.connect();
+
+
+router.get('/', function(req, res, next) {
+  connection.query("SELECT * FROM projects", function(err, rows, fields){
+    if(err) throw err;
+    res.render('admin/index', {
+      "projects": rows
+    })
+  })
+});
+
+router.get('/add', function(req, res, next) {
+  res.render('admin/add');
+});
+
+router.post('/add', upload.single('projectimage'), function(req, res, next) {
+  var title = req.body.title;
+
+  // Check Image upload
+  if (req.file) {
+    var projectImageName = req.file.filename
+  }
+
+  req.checkBody('title', 'Title field is required').notEmpty();
+
+  var errors = req.validationErrors();
+
+  if(errorrs){
+    res.render('admin/add, {
+      errors: errors,
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      url: url
+    })
+  } else {
+    var project = {
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      date: projectdate,
+      url: url
+      image: projectImageName
+    };
+  }
+
+  var query = connection.query('INSERT INTO projects SET ?', project, function(err, result){
+    console.log('Error: '+err);
+    console.log('Success: '+result);
+  });
+
+  req.flash('success_msg', 'Project Added');
+
+  res.redirect('/admin');
+});
+
+router.get('/edit/:id', function(req, res, next) {
+  connection.query("SELECT * FROM projects WHERE id = ?", function(err, rows, fields){
+    if(err) throw err;
+    res.render('admin/edit', {
+      "projects": rows[0]
+    })
+  })
+});
+
+router.post('/edit/:id', upload.single('projectimage'), function(req, res, next) {
+  var title = req.body.title;
+
+  // Check Image upload
+  if (req.file) {
+    var projectImageName = req.file.filename
+  } else {
+    var projectImageName = 'noimage.jpg';
+  }
+
+  req.checkBody('title', 'Title field is required').notEmpty();
+  req.checkBody('service', 'Service field is required').notEmpty();
+
+  var errors = req.validationErrors();
+
+  if(errors){
+    res.render('admin/add, {
+      errors: errors,
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      url: url
+    })
+  } else {
+    var project = {
+      title: title,
+      description: description,
+      service: service,
+      client: client,
+      date: projectdate,
+      url: url
+    };
+  }
+
+  var query = connection.query('UPDATE projects SET ? WHERE id = ' + req.params.id, project, function(err, result){
+    console.log('Error: '+err);
+    console.log('Success: '+result);
+  });
+
+  req.flash('success_msg', 'Project Updated');
+
+  res.redirect('/admin');
+});
+
+
+module.exports = router;
+#+end_src
+
+
+**** views/admin/edit.handlebars
+#+begin_src html
+FORM GOES HERE
+<a href="/">Go Back</a>
+<h1>{{project.title}}</h1>
+<div class="row">
+  <div class="large-6 columns">
+    <img src="/images/portfolio/{{project.image}}">
+  </div>
+  <div class="large-6 columns">
+    <ul>
+      <li><strong>Project: </strong>{{project.title}}</li>
+      <li><strong>Client: </strong>{{project.client}}</li>
+      <li><strong>Service: </strong>{{project.service}}</li>
+      <li><strong>Date: </strong>{{project.date}}</li>
+    </ul>
+    <hr />
+    <p>{{project.description}}</p>
+    <br />
+    <a href="{{project.url}}">Visit Website</a>
+  </div>
+</div>
+#+end_src
+
+**** public/js/main.js
+#+begin_src javascript
+$(document).ready(function(){
+  $('.delete-project').on('click', function(){
+    var id = $(this).data('id');
+    var url = '/admin/delete/'+id;
+    if(confirm('Delete Project?')){
+      $.ajax({
+        url:url,
+        type:'DELETE',
+        success: function(results){
+          window.location = '/admin';
+        }, error: function(err){
+          console.log(err);
+        }
+      });
+    }
+  });
+})
+#+end_src
