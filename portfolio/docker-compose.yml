@@ -6,12 +6,28 @@ services:
       - db
     environment:
       DB_USER: user
-      DB_PASSWORD: password
+      DB_PASSWORD: 12345
   db:
     build: mysql/.
     restart: always
+    volumes:
+      #- db_data:/var/lib/mysql
+      #- mysql/data:/var/lib/mysql
+      - /tmp/mysql:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: database
+      MYSQL_DATABASE: portfolio 
       MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_PASSWORD: 12345
+    ports:
+      - 3306:3306
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    links:
+      - db:db
+    ports:
+      - 8080:8080
+# docker run --name myadmin -d --link mysql_db_server:db -p 8080:80 phpmyadmin/phpmyadmin
+
+#volumes:
+  #db_data: mysql/data

@@ -1,3 +1,3 @@
-FROM mysql:8
+FROM mysql:5
 EXPOSE 3306
 MAINTAINER Abby Malson

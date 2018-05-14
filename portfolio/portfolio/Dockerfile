@@ -13,9 +13,7 @@ EXPOSE 3000
 # Define environment variable
 ENV PORT 3000
 
-RUN "npm install"
-#CMD ["node", "app"]
-
+RUN npm install
 
 # Copy the init script
 COPY docker-entrypoint.sh /
